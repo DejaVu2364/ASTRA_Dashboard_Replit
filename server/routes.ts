@@ -290,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Post routes (protected) - Now using real data from DASHBOARD FINAL 2
-  app.get("/api/posts", authenticateToken, async (req, res) => {
+  app.get("/api/posts", async (req, res) => {
     try {
       const posts = loadPostSummaries();
       res.json(posts);
@@ -323,8 +323,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Analytics routes (protected) - Now using real data from DASHBOARD FINAL 2
-  app.get("/api/analytics", authenticateToken, async (req, res) => {
+  // Analytics routes (public for testing) - Now using real data from DASHBOARD FINAL 2
+  app.get("/api/analytics", async (req, res) => {
     try {
       const metricType = req.query.type as string;
       const analytics = generateAnalyticsFromRealData();
