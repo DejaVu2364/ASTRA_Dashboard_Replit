@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 5%, 12%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 4%, 18%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(200, 100%, 50%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+  --radius: 0.5rem;
+  
+  /* Custom Astra theme colors */
+  --obsidian: hsl(240, 10%, 3.9%);
+  --obsidian-surface: hsl(240, 5%, 12%);
+  --obsidian-border: hsl(240, 4%, 18%);
+  --electric-blue: hsl(200, 100%, 50%);
+  --electric-glow: hsl(200, 100%, 70%);
+  --verified-green: hsl(145, 80%, 42%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-obsidian text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', sans-serif;
+    @apply text-white;
+  }
+}
+
+@layer components {
+  .glass-morphism {
+    backdrop-filter: blur(10px);
+    background: rgba(26, 26, 26, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .holographic-text {
+    background: linear-gradient(45deg, hsl(200, 100%, 50%), hsl(200, 100%, 70%), hsl(270, 70%, 60%));
+    background-size: 200% 200%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: hsl(200, 100%, 50%);
+    border-radius: 50%;
+    animation: float 4s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  @keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.02); }
+  }
+  
+  @keyframes glow {
+    0% { box-shadow: 0 0 5px hsl(200, 100%, 50%), 0 0 10px hsl(200, 100%, 50%), 0 0 15px hsl(200, 100%, 50%); }
+    100% { box-shadow: 0 0 10px hsl(200, 100%, 50%), 0 0 20px hsl(200, 100%, 50%), 0 0 30px hsl(200, 100%, 50%); }
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 3s ease-in-out infinite;
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  .animate-glow {
+    animation: glow 1.5s ease-in-out infinite alternate;
+  }
+}
