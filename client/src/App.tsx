@@ -8,6 +8,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import IntroScreen from "./components/IntroScreen";
 import Sidebar from "./components/Sidebar";
 import CommandCenter from "./components/CommandCenter";
+import DataExplorer from "./components/DataExplorer";
+import ChatWithAstra from "./components/ChatWithAstra";
+import InsightsChallenge from "./components/InsightsChallenge";
 import ParticleBackground from "./components/ParticleBackground";
 import NotFound from "@/pages/not-found";
 
@@ -27,8 +30,12 @@ function App() {
     switch (activeRoute) {
       case 'command-center':
         return <CommandCenter />;
-      case 'sentiment-engine':
-        return <div className="flex-1 p-8 text-center text-gray-400">Sentiment Engine - Coming Soon</div>;
+      case 'data-explorer':
+        return <DataExplorer />;
+      case 'chat-astra':
+        return <ChatWithAstra />;
+      case 'insights-challenge':
+        return <InsightsChallenge />;
       case 'narrative-scanner':
         return <div className="flex-1 p-8 text-center text-gray-400">Narrative Scanner - Coming Soon</div>;
       case 'opposition-watch':

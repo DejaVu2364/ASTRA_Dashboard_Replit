@@ -36,12 +36,16 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Components
 - **IntroScreen**: Animated loading screen with holographic "ASTRA" branding
-- **CommandCenter**: Main dashboard with real-time data visualization
-- **Sidebar**: Navigation component with futuristic styling
+- **CommandCenter**: Main dashboard with real-time data visualization and enhanced pulse cards
+- **DataExplorer**: Advanced filtering and visualization tool for deep intelligence analysis
+- **ChatWithAstra**: AI-powered chat interface for real-time intelligence queries
+- **InsightsChallenge**: Competitive analysis platform with gamified intelligence tasks
+- **Sidebar**: Navigation component with futuristic styling and expanded menu options
 - **KPICard**: Animated metric cards with counting animations
+- **PulseCard**: Real-time status cards with scanning animations and pulse effects
 - **Charts**: Data visualization components using Recharts (TopicChart, SentimentChart)
 - **PostTable**: Table component for displaying analyzed social media posts
-- **ParticleBackground**: Animated background effects
+- **ParticleBackground**: Enhanced animated background with cyber grid and data streams
 
 ### Backend Components
 - **Storage Layer**: Abstracted storage interface with in-memory implementation

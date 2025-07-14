@@ -77,6 +77,21 @@ export default {
         verified: {
           green: "var(--verified-green)",
         },
+        neon: {
+          cyan: "var(--neon-cyan)",
+        },
+        pulse: {
+          blue: "var(--pulse-blue)",
+        },
+        warning: {
+          amber: "var(--warning-amber)",
+        },
+        danger: {
+          red: "var(--danger-red)",
+        },
+        success: {
+          emerald: "var(--success-emerald)",
+        },
       },
       keyframes: {
         "accordion-down": {

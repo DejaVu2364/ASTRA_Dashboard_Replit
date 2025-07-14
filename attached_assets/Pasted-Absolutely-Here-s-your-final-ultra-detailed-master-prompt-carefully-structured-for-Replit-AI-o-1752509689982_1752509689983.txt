@@ -1,0 +1,184 @@
+Absolutely. Here's your **final, ultra-detailed master prompt**—carefully structured for Replit AI or any advanced code assistant to **fully understand your vision and build a 10/10 futuristic political intelligence dashboard** using your Astra pipeline.
+
+---
+
+## 🧠 **MASTER REPLIT AI PROMPT**
+
+### ✅ Astra Intelligence Dashboard — Full System Build
+
+---
+
+> You are a full-stack AI developer and design expert. Build me a complete, futuristic, visually stunning, politically insightful **Astra Intelligence Dashboard** using:
+
+* **React** (with Vite setup)
+* **Tailwind CSS** (for styling)
+* **Chart.js** or **Recharts** (for visualizations)
+* **Optional**: `@shadcn/ui`, `lucide-react`, `framer-motion` for extra UI polish and animations
+
+The dashboard must be powered by real-time or monthly data outputs from my political pipeline system.
+
+---
+
+### 📦 PIPELINE CONTEXT
+
+I’ve uploaded my full **Astra political intelligence pipeline** into the Replit workspace. The structure is as follows:
+
+| File                       | Purpose                                                        |
+| -------------------------- | -------------------------------------------------------------- |
+| `run_pipeline.py`          | Orchestrates the monthly analysis pipeline                     |
+| `process_facebook_data.py` | Processes raw Facebook posts/comments                          |
+| `translate_and_prepare.py` | Cleans + translates comments                                   |
+| `enrich_data.py`           | Uses ML to assign sentiment & topics                           |
+| `aggregate_data.py`        | Produces final post\_summary CSVs with political metrics       |
+| `monthly_summaries/*.csv`  | Final outputs with sentiment, topics, engagement, top comments |
+| `enriched_data/*.csv`      | Cleaned and enriched individual comments                       |
+| `processed_data/*.csv`     | Raw processed posts/comments                                   |
+
+---
+
+### 🚀 DASHBOARD REQUIREMENTS
+
+Build a **professional-grade, interactive, dark-themed dashboard** with the following structure and components:
+
+---
+
+#### 🧭 1. Layout & Structure
+
+* **Sidebar** (fixed vertical):
+
+  * "Command Center"
+  * "Data Explorer"
+  * "Chat With Astra"
+  * "Insights Challenge"
+  * "Verified Data" (highlight this in blue if active)
+* **Top Bar** (horizontal):
+
+  * Astra logo/title
+  * “Analysis Period: \[Month]”
+  * Settings icon
+  * Notification bell
+  * Optional: Dark/Light toggle
+* **Main Panel**:
+
+  * Grid layout with cards, graphs, and summary panels
+
+---
+
+#### 📊 2. Dashboard Cards & Components
+
+Build the following widgets using data from `monthly_summaries` and `enriched_data`:
+
+| Component                | Description                                       | Data Source                                   | Type              |
+| ------------------------ | ------------------------------------------------- | --------------------------------------------- | ----------------- |
+| **Sentiment Analysis**   | Show avg sentiment by topic (Economy, Health...)  | `avg_sentiment_score` grouped by `main_topic` | Bar Chart         |
+| **Narrative Trends**     | Show trending topics by day                       | Aggregated topics                             | Line Chart        |
+| **Engagement Breakdown** | Compare posts vs tweets                           | Count from post IDs                           | Pie/Donut Chart   |
+| **Real-Time Pulse**      | Show alerts, impressions                          | Simulated/Live                                | Glowing Icon Card |
+| **Top Performing Posts** | Sort by `weighted_engagement_rate`                | `monthly_summaries/*.csv`                     | Table/List        |
+| **Negative Watchlist**   | Show top negative comments by sentiment           | `most_negative_comment`                       | Card with quote   |
+| **Strategic Summary**    | Display Gemini-like summary from pipeline         | `generate_final_report_gemini.py` output      | Text Area or Tab  |
+| **Filter Toolbar**       | Topic filter, Sentiment filter, Date range picker | All CSVs                                      | Selects           |
+
+---
+
+#### 🎨 3. Visual Aesthetic Goals
+
+Make the dashboard **look and feel like a cutting-edge military or political command center**:
+
+* Dark mode UI base (`#0a0f1b`)
+* Neon blue/cyan accent colors (`#00d9ff`)
+* Tailwind’s glassmorphism: `backdrop-blur`, semi-transparent cards
+* Animated glow or pulse for key widgets (`framer-motion`)
+* Grid-based layout (Tailwind’s `grid-cols-3`, `gap-6`, etc.)
+* Add hover effects and clickable cards (`transition`, `hover:scale-105`)
+* Clean typography (`font-sans`, `tracking-wide`, `uppercase`)
+* Optional: Floating charts or modals with blur + shadow
+
+---
+
+#### 🔄 4. Data Integration & Accuracy
+
+You **must read and parse the actual data from CSVs** such as:
+
+* `monthly_summaries/*.csv`
+* `enriched_data/*.csv`
+
+Allow the user to:
+
+* Select month (`June 2025`, `May 2025`, etc.)
+* Filter by topic (`Policy`, `Economy`, etc.)
+* View underlying data table per post or comment
+
+Use either:
+
+* `papaparse` in frontend
+* OR create a small Express.js backend API to serve CSVs as JSON
+
+**Accuracy is critical**. The dashboard must reflect true data from the pipeline.
+
+---
+
+#### 💡 5. Extra Enhancements (Optional but Ideal)
+
+| Feature                | Description                                                    |
+| ---------------------- | -------------------------------------------------------------- |
+| 📤 CSV Export          | Button to export filtered view                                 |
+| ✍️ Chat With Astra     | Text area that mimics chat with AI (can use dummy LLM for now) |
+| 📘 Reports Tab         | Read and display the final `Gemini` report generated from data |
+| 🎯 KPI Panel           | Metrics like total posts, shares, avg sentiment, top topic     |
+| 📈 Trend Heatmap       | Daily sentiment/activity (calendar heatmap)                    |
+| 🔁 Auto-refresh toggle | Simulate live updates                                          |
+| 🎛️ Toggle layouts     | Grid/List view toggle for summaries                            |
+
+---
+
+#### ⚙️ 6. Code & Folder Structure
+
+Use modular, production-grade code practices:
+
+```
+src/
+├── components/
+│   ├── Sidebar.jsx
+│   ├── Header.jsx
+│   ├── SentimentBarChart.jsx
+│   ├── PulseCard.jsx
+├── pages/
+│   ├── Dashboard.jsx
+│   └── DataExplorer.jsx
+├── utils/
+│   ├── parseCSV.js
+├── App.jsx
+├── main.jsx
+```
+
+---
+
+#### 🧪 7. Sample Flow
+
+When I open the dashboard:
+
+* It defaults to **Command Center** page.
+* I see a glowing, animated **Pulse Card** showing: “Impressions: 1.8M | Alerts: 5”
+* There are three charts:
+
+  * **Bar Chart**: Sentiment per topic
+  * **Line Chart**: Topic trends
+  * **Pie Chart**: Posts vs Tweets
+* Below, I see a data table of **Top Posts by Engagement**
+* All metrics are accurate from June 2025 data.
+
+---
+
+### ✅ Final Goal:
+
+Deliver a futuristic, accurate, stunning dashboard that:
+
+* **Wows political strategists**
+* **Uses real Astra data**
+* **Looks like a product from Palantir or a NASA command center**
+* **Scales well for more modules and insights**
+
+---
+
+Would you like me to now generate the boilerplate UI code, chart components, or layout grid for this? Or help create an API route in Replit to load CSVs as JSON?

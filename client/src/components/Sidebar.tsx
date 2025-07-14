@@ -5,7 +5,11 @@ import {
   Search, 
   Eye, 
   TrendingUp, 
-  Shield 
+  Shield,
+  Database,
+  MessageSquare,
+  Target,
+  Radar
 } from "lucide-react";
 
 interface SidebarProps {
@@ -16,9 +20,11 @@ interface SidebarProps {
 export default function Sidebar({ activeRoute, onNavigate }: SidebarProps) {
   const navItems = [
     { id: 'command-center', label: 'Command Center', icon: Command },
-    { id: 'sentiment-engine', label: 'Sentiment Engine', icon: Brain },
-    { id: 'narrative-scanner', label: 'Narrative Scanner', icon: Search },
-    { id: 'opposition-watch', label: 'Opposition Watch', icon: Eye },
+    { id: 'data-explorer', label: 'Data Explorer', icon: Database },
+    { id: 'chat-astra', label: 'Chat with ASTRA', icon: MessageSquare },
+    { id: 'insights-challenge', label: 'Insights Challenge', icon: Target },
+    { id: 'narrative-scanner', label: 'Narrative Scanner', icon: Radar },
+    { id: 'opposition-watch', label: 'Opposition Watch', icon: Shield },
     { id: 'predictive-analytics', label: 'Predictive Analytics', icon: TrendingUp },
   ];
 
