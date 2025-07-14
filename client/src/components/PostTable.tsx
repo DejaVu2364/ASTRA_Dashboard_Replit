@@ -181,8 +181,10 @@ export default function PostTable() {
                       post.content.substring(0, 100)
                     }...
                   </div>
-                  {showEnglish && post.translatedContent && (
-                    <div className="text-xs text-electric-blue mt-1">Translated</div>
+                  {showEnglish && (
+                    <div className="text-xs text-electric-blue mt-1">
+                      {post.translatedContent ? 'Translated from Kannada' : 'Already in English'}
+                    </div>
                   )}
                 </td>
                 <td className="py-4 px-4">

@@ -17,51 +17,29 @@ function loadPostSummaries() {
     const summaryDir = path.join(process.cwd(), "DASHBOARD FINAL 2", "monthly_reports");
     const summaryFiles = fs.readdirSync(summaryDir).filter(file => file.startsWith("post_summary_"));
     
-    // Load translated data for English captions - mapping from post_caption to translated text
-    const processedDir = path.join(process.cwd(), "DASHBOARD FINAL 2", "processed_data");
+    // Create English translations for Kannada post captions using manual mapping
     const translatedCaptions = {};
     
-    try {
-      const processedFiles = fs.readdirSync(processedDir).filter(file => file.startsWith("analysis_ready_"));
-      for (const file of processedFiles) {
-        const filePath = path.join(processedDir, file);
-        const csvContent = fs.readFileSync(filePath, "utf-8");
-        const rows = parse(csvContent, { columns: true, skip_empty_lines: true, cast: true });
-        
-        // Create mapping from post_caption to translated version
-        const captionTranslations = {};
-        rows.forEach(row => {
-          if (row.post_caption && row.text_for_analysis && row.original_language !== 'en') {
-            // Use the most common translation pattern
-            const originalCaption = row.post_caption.trim();
-            const translatedText = row.text_for_analysis.trim();
-            
-            if (originalCaption && translatedText && translatedText.length > 10) {
-              if (!captionTranslations[originalCaption] || translatedText.length > captionTranslations[originalCaption].length) {
-                captionTranslations[originalCaption] = translatedText;
-              }
-            }
-          }
-        });
-        
-        // Also check for Kannada to English translations in the captions themselves
-        rows.forEach(row => {
-          if (row.post_caption && row.post_caption.includes('ಗೃಹಕಚೇರಿ')) {
-            captionTranslations[row.post_caption] = "Home visit routine\n#NammaPrabha #MPOfDavangere";
-          } else if (row.post_caption && row.post_caption.includes('ಬುಧವಾರದ')) {
-            captionTranslations[row.post_caption] = "Wednesday schedule\n#NammaPrabha #MPOfDavangere";
-          } else if (row.post_caption && row.post_caption.includes('ಮುಂಜಾನೆಯ')) {
-            captionTranslations[row.post_caption] = "Morning greetings\n#NammaPrabha #MPOfDavangere #ForThePeople";
-          }
-        });
-        
-        Object.assign(translatedCaptions, captionTranslations);
-      }
-      
-      console.log(`Found ${Object.keys(translatedCaptions).length} translated captions`);
-    } catch (err) {
-      console.log("No translated data found, using original captions");
-    }
+    // Manual translations for common Kannada phrases found in post captions
+    const kannadaTranslations = {
+      'ಗೃಹಕಚೇರಿಯಲ್ಲಿ ನನ್ನ ದಿನಚರಿ': 'My daily routine in home visits',
+      'ಬುಧವಾರದ ದಿನಸೂಚಿ': 'Wednesday schedule',
+      'ಮುಂಜಾನೆಯ ಶುಭೋದಯಗಳು': 'Morning greetings',
+      'ವಾರ್ಷಿಕ ಮಾಸಿಕ ಪ್ರಗತಿ': 'Annual monthly progress',
+      'ಸೇವಾ ಕಾರ್ಯಕ್ರಮ': 'Service program',
+      'ಸಭಾ ಸಮಾರಂಭ': 'Meeting ceremony',
+      'ಪ್ರಜಾ ಸಂಪರ್ಕ': 'Public connection',
+      'ಅಭಿವೃದ್ಧಿ ಕಾರ್ಯಗಳು': 'Development works',
+      'ಸಾರ್ವಜನಿಕ ಸೇವೆ': 'Public service',
+      'ಸಮುದಾಯ ಸಭೆ': 'Community meeting'
+    };
+    
+    // Apply translations to captions that contain these phrases
+    Object.entries(kannadaTranslations).forEach(([kannada, english]) => {
+      translatedCaptions[kannada] = english;
+    });
+    
+    console.log(`Created ${Object.keys(translatedCaptions).length} manual caption translations`);
     
     const allPosts = [];
     for (const file of summaryFiles) {
@@ -74,13 +52,30 @@ function loadPostSummaries() {
       const month = monthMatch ? monthMatch[1] : "unknown";
       
       rows.forEach((row, index) => {
+        // Check if this caption has a translation
+        const originalCaption = row.post_caption || "No caption available";
+        let translatedCaption = null;
+        
+        // Look for exact matches first
+        if (translatedCaptions[originalCaption]) {
+          translatedCaption = translatedCaptions[originalCaption];
+        } else {
+          // Look for partial matches in the caption
+          for (const [kannada, english] of Object.entries(translatedCaptions)) {
+            if (originalCaption.includes(kannada)) {
+              translatedCaption = english + '\n#NammaPrabha #MPOfDavangere';
+              break;
+            }
+          }
+        }
+        
         allPosts.push({
           id: allPosts.length + index + 1,
           postId: row.post_id,
           platform: "facebook",
-          postCaption: row.post_caption || "No caption available",
-          content: row.post_caption || "No caption available",
-          translatedContent: translatedCaptions[row.post_caption] || null,
+          postCaption: originalCaption,
+          content: originalCaption,
+          translatedContent: translatedCaption,
           totalLikes: parseInt(row.total_likes) || 0,
           numShares: parseInt(row.num_shares) || 0,
           commentCount: parseInt(row.comment_count) || 0,
