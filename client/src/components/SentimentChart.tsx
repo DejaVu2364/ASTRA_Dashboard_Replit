@@ -44,29 +44,19 @@ export default function SentimentChart() {
 
   if (isLoading) {
     return (
-      <motion.div 
-        className="glass-morphism p-6 rounded-xl"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-      >
+      <div className="glass-morphism p-6 rounded-xl">
         <h3 className="text-xl font-heading font-bold text-white mb-4">
           Sentiment Analysis
         </h3>
         <div className="h-64 flex items-center justify-center">
-          <div className="text-electric-blue">Loading real data...</div>
+          <div className="text-electric-blue">Loading...</div>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.div 
-      className="glass-morphism p-6 rounded-xl"
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, delay: 0.5 }}
-    >
+    <div className="glass-morphism p-6 rounded-xl">
       <h3 className="text-xl font-heading font-bold text-white mb-4">
         Sentiment Analysis
       </h3>
@@ -102,6 +92,6 @@ export default function SentimentChart() {
           </AreaChart>
         </ResponsiveContainer>
       </div>
-    </motion.div>
+    </div>
   );
 }
