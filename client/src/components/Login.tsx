@@ -20,17 +20,12 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     setIsLoading(true);
 
     try {
-      const response = await apiRequest('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      const response = await apiRequest('POST', '/api/login', { username, password });
+      const data = await response.json();
 
-      if (response.token) {
-        localStorage.setItem('astra_token', response.token);
-        onLoginSuccess(response.token);
+      if (data.token) {
+        localStorage.setItem('astra_token', data.token);
+        onLoginSuccess(data.token);
         toast({
           title: "Welcome to ASTRA Intelligence",
           description: "Authentication successful. Initializing secure connection...",

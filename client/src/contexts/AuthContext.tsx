@@ -47,12 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      await apiRequest('/api/logout', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      await apiRequest('POST', '/api/logout');
     } catch (error) {
       console.error('Logout error:', error);
     }
