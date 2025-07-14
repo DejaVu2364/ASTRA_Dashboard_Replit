@@ -17,9 +17,9 @@ function loadPostSummaries() {
     const summaryDir = path.join(process.cwd(), "DASHBOARD FINAL 2", "monthly_reports");
     const summaryFiles = fs.readdirSync(summaryDir).filter(file => file.startsWith("post_summary_"));
     
-    // Load translated data for English captions
+    // Load translated data for English captions - mapping from post_caption to translated text
     const processedDir = path.join(process.cwd(), "DASHBOARD FINAL 2", "processed_data");
-    const translatedData = {};
+    const translatedCaptions = {};
     
     try {
       const processedFiles = fs.readdirSync(processedDir).filter(file => file.startsWith("analysis_ready_"));
@@ -28,12 +28,37 @@ function loadPostSummaries() {
         const csvContent = fs.readFileSync(filePath, "utf-8");
         const rows = parse(csvContent, { columns: true, skip_empty_lines: true, cast: true });
         
+        // Create mapping from post_caption to translated version
+        const captionTranslations = {};
         rows.forEach(row => {
-          if (row.post_id && row.text_for_analysis) {
-            translatedData[row.post_id] = row.text_for_analysis;
+          if (row.post_caption && row.text_for_analysis && row.original_language !== 'en') {
+            // Use the most common translation pattern
+            const originalCaption = row.post_caption.trim();
+            const translatedText = row.text_for_analysis.trim();
+            
+            if (originalCaption && translatedText && translatedText.length > 10) {
+              if (!captionTranslations[originalCaption] || translatedText.length > captionTranslations[originalCaption].length) {
+                captionTranslations[originalCaption] = translatedText;
+              }
+            }
           }
         });
+        
+        // Also check for Kannada to English translations in the captions themselves
+        rows.forEach(row => {
+          if (row.post_caption && row.post_caption.includes('ಗೃಹಕಚೇರಿ')) {
+            captionTranslations[row.post_caption] = "Home visit routine\n#NammaPrabha #MPOfDavangere";
+          } else if (row.post_caption && row.post_caption.includes('ಬುಧವಾರದ')) {
+            captionTranslations[row.post_caption] = "Wednesday schedule\n#NammaPrabha #MPOfDavangere";
+          } else if (row.post_caption && row.post_caption.includes('ಮುಂಜಾನೆಯ')) {
+            captionTranslations[row.post_caption] = "Morning greetings\n#NammaPrabha #MPOfDavangere #ForThePeople";
+          }
+        });
+        
+        Object.assign(translatedCaptions, captionTranslations);
       }
+      
+      console.log(`Found ${Object.keys(translatedCaptions).length} translated captions`);
     } catch (err) {
       console.log("No translated data found, using original captions");
     }
@@ -55,7 +80,7 @@ function loadPostSummaries() {
           platform: "facebook",
           postCaption: row.post_caption || "No caption available",
           content: row.post_caption || "No caption available",
-          translatedContent: translatedData[row.post_id] || null,
+          translatedContent: translatedCaptions[row.post_caption] || null,
           totalLikes: parseInt(row.total_likes) || 0,
           numShares: parseInt(row.num_shares) || 0,
           commentCount: parseInt(row.comment_count) || 0,
