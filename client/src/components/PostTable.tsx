@@ -1,9 +1,15 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { mockDashboardData } from "../data/mockData";
+import { useQuery } from "@tanstack/react-query";
+import type { Post } from "@shared/schema";
 
 export default function PostTable() {
+  const { data: posts, isLoading, error } = useQuery<Post[]>({
+    queryKey: ['/api/posts'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
   const getTopicColor = (topic: string) => {
     switch (topic) {
       case 'Praise':
@@ -20,6 +26,38 @@ export default function PostTable() {
   const getSentimentColor = (score: number) => {
     return score >= 0 ? 'text-verified-green' : 'text-red-400';
   };
+
+  if (isLoading) {
+    return (
+      <div className="glass-morphism p-6 rounded-xl flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-electric-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading intelligence data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="glass-morphism p-6 rounded-xl flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-400 mb-2">Failed to load data</p>
+          <p className="text-gray-400 text-sm">Check your connection and try again</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!posts || posts.length === 0) {
+    return (
+      <div className="glass-morphism p-6 rounded-xl flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-gray-400">No posts available</p>
+        </div>
+      </div>
+    );
+  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -80,41 +118,41 @@ export default function PostTable() {
             initial="hidden"
             animate="visible"
           >
-            {mockDashboardData.map((post, index) => (
+            {posts.map((post, index) => (
               <motion.tr
-                key={post.post_id}
+                key={post.id}
                 variants={rowVariants}
                 className="border-b border-obsidian-border/50 hover:bg-obsidian-surface/50 transition-all"
                 whileHover={{ backgroundColor: "rgba(26, 26, 26, 0.5)" }}
               >
                 <td className="py-4 px-4 font-mono text-electric-blue">
-                  {post.post_id}
+                  {post.postId}
                 </td>
                 <td className="py-4 px-4 max-w-md">
-                  <div className="truncate">{post.post_caption}</div>
+                  <div className="truncate">{post.caption}</div>
                 </td>
                 <td className="py-4 px-4">
                   <div className="text-white font-medium">
-                    {(post.total_likes + post.num_shares + post.comment_count).toLocaleString()}
+                    {(post.totalLikes + post.numShares + post.commentCount).toLocaleString()}
                   </div>
                   <div className="text-xs text-gray-400">
-                    ↑ {(post.weighted_engagement_rate * 100).toFixed(1)}% rate
+                    ↑ {(parseFloat(post.weightedEngagementRate) * 100).toFixed(1)}% rate
                   </div>
                 </td>
                 <td className="py-4 px-4">
-                  <span className={`font-medium ${getSentimentColor(post.avg_sentiment_score)}`}>
-                    {post.avg_sentiment_score >= 0 ? '+' : ''}{post.avg_sentiment_score.toFixed(2)}
+                  <span className={`font-medium ${getSentimentColor(parseFloat(post.avgSentimentScore))}`}>
+                    {parseFloat(post.avgSentimentScore) >= 0 ? '+' : ''}{parseFloat(post.avgSentimentScore).toFixed(2)}
                   </span>
                   <div className="text-xs text-gray-400">
-                    {post.avg_sentiment_score >= 0 ? 'Positive' : 'Negative'}
+                    {parseFloat(post.avgSentimentScore) >= 0 ? 'Positive' : 'Negative'}
                   </div>
                 </td>
                 <td className="py-4 px-4">
                   <Badge 
                     variant="outline"
-                    className={`${getTopicColor(post.main_topic)} border`}
+                    className={`${getTopicColor(post.mainTopic)} border`}
                   >
-                    {post.main_topic}
+                    {post.mainTopic}
                   </Badge>
                 </td>
                 <td className="py-4 px-4">

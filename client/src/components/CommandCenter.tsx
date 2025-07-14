@@ -1,14 +1,26 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import KPICard from "./KPICard";
 import PulseCard from "./PulseCard";
 import TopicChart from "./TopicChart";
 import SentimentChart from "./SentimentChart";
 import PostTable from "./PostTable";
+import type { Analytics, Post } from "@shared/schema";
 import { kpiData } from "../data/mockData";
 
 export default function CommandCenter() {
   const [currentTime, setCurrentTime] = useState(new Date());
+  
+  const { data: analytics, isLoading: analyticsLoading } = useQuery<Analytics[]>({
+    queryKey: ['/api/analytics'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const { data: posts, isLoading: postsLoading } = useQuery<Post[]>({
+    queryKey: ['/api/posts'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -16,6 +28,21 @@ export default function CommandCenter() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Process analytics data
+  const processedAnalytics = analytics?.reduce((acc, metric) => {
+    acc[metric.metricType] = parseFloat(metric.value);
+    return acc;
+  }, {} as Record<string, number>) || {};
+
+  // Calculate real-time metrics from posts
+  const totalPosts = posts?.length || 0;
+  const totalEngagement = posts?.reduce((sum, post) => 
+    sum + post.totalLikes + post.numShares + post.commentCount, 0) || 0;
+  const averageSentiment = posts?.reduce((sum, post) => 
+    sum + parseFloat(post.avgSentimentScore), 0) / totalPosts || 0;
+  const averageEngagement = posts?.reduce((sum, post) => 
+    sum + parseFloat(post.weightedEngagementRate), 0) / totalPosts || 0;
 
   return (
     <div className="flex-1 p-8 space-y-8">
