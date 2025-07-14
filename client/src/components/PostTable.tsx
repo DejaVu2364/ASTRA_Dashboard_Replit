@@ -95,7 +95,7 @@ export default function PostTable() {
 
   // Generate Facebook post URL
   const getFacebookUrl = (postId: string) => {
-    return `https://www.facebook.com/DrPrabhaOnline/posts/${postId}`;
+    return `https://www.facebook.com/permalink.php?story_fbid=${postId}&id=100064078686476`;
   };
 
   return (

@@ -4,6 +4,7 @@ import KPICard from "./KPICard";
 import TopicChart from "./TopicChart";
 import SentimentChart from "./SentimentChart";
 import PostTable from "./PostTable";
+import IntelligenceSearch from "./IntelligenceSearch";
 import type { Analytics, Post } from "@shared/schema";
 // Removed mock data import - using real API data now
 
@@ -29,9 +30,9 @@ export default function CommandCenter() {
   const totalEngagement = posts?.reduce((sum, post) => 
     sum + post.totalLikes + post.numShares + post.commentCount, 0) || 0;
   const averageSentiment = posts?.reduce((sum, post) => 
-    sum + parseFloat(post.avgSentimentScore), 0) / totalPosts || 0;
+    sum + parseFloat(post.avgSentimentScore || '0'), 0) / totalPosts || 0;
   const averageEngagement = posts?.reduce((sum, post) => 
-    sum + parseFloat(post.weightedEngagementRate), 0) / totalPosts || 0;
+    sum + parseFloat(post.weightedEngagementRate || '0'), 0) / totalPosts || 0;
 
   // Create KPI data from real analytics
   const kpiData = [
@@ -95,6 +96,9 @@ export default function CommandCenter() {
         ))}
       </div>
       
+      {/* Intelligence Search */}
+      <IntelligenceSearch />
+
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TopicChart />
