@@ -43,7 +43,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-liquid-obsidian flex items-center justify-center p-4">
+    <div className="min-h-screen bg-obsidian flex items-center justify-center p-4">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-20 w-72 h-72 bg-electric-blue/10 rounded-full blur-3xl animate-pulse"></div>
@@ -57,7 +57,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         transition={{ duration: 0.8 }}
         className="relative z-10 w-full max-w-md"
       >
-        <div className="bg-dark-surface/80 backdrop-blur-xl p-8 rounded-xl border border-electric-blue/20 shadow-2xl">
+        <div className="bg-obsidian-surface/80 backdrop-blur-xl p-8 rounded-xl border border-electric-blue/20 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
             <motion.div
@@ -103,7 +103,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 bg-dark-surface/50 border border-electric-blue/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:border-electric-blue/50 transition-colors"
+                className="w-full px-4 py-3 bg-obsidian-surface/50 border border-electric-blue/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:border-electric-blue/50 transition-colors"
                 placeholder="Enter your username"
                 required
               />
@@ -123,7 +123,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-dark-surface/50 border border-electric-blue/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:border-electric-blue/50 transition-colors pr-12"
+                  className="w-full px-4 py-3 bg-obsidian-surface/50 border border-electric-blue/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:border-electric-blue/50 transition-colors pr-12"
                   placeholder="Enter your password"
                   required
                 />
@@ -143,14 +143,14 @@ export default function Login({ onLoginSuccess }: LoginProps) {
               transition={{ duration: 0.6, delay: 1.2 }}
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 px-4 bg-electric-blue hover:bg-electric-blue/90 text-liquid-obsidian font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 bg-electric-blue hover:bg-electric-blue/90 text-obsidian font-semibold rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="w-5 h-5 border-2 border-liquid-obsidian/30 border-t-liquid-obsidian rounded-full"
+                    className="w-5 h-5 border-2 border-obsidian/30 border-t-obsidian rounded-full"
                   />
                   <span>Authenticating...</span>
                 </>

@@ -74,9 +74,13 @@ export default {
           blue: "var(--electric-blue)",
           glow: "var(--electric-glow)",
         },
+        "electric-blue": "var(--electric-blue)",
+        "obsidian-surface": "var(--obsidian-surface)",
+        "obsidian-border": "var(--obsidian-border)",
         verified: {
           green: "var(--verified-green)",
         },
+        "verified-green": "var(--verified-green)",
         neon: {
           cyan: "var(--neon-cyan)",
         },
