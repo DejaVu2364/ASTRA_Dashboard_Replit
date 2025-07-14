@@ -5,8 +5,168 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { storage } from "./storage";
 import { insertUserSchema, insertPostSchema, insertCommentSchema, insertAnalyticsSchema, insertChallengeSchema, insertUserChallengeSchema, insertNarrativeReportSchema, insertGeminiReportSchema } from "@shared/schema";
+import fs from "fs";
+import path from "path";
+import { parse } from "csv-parse/sync";
 
 const JWT_SECRET = process.env.JWT_SECRET || "astra-intelligence-secret-key";
+
+// Real data loading functions
+function loadPostSummaries() {
+  try {
+    const summaryDir = path.join(process.cwd(), "DASHBOARD FINAL 2", "monthly_reports");
+    const summaryFiles = fs.readdirSync(summaryDir).filter(file => file.startsWith("post_summary_"));
+    
+    const allPosts = [];
+    for (const file of summaryFiles) {
+      const filePath = path.join(summaryDir, file);
+      const csvContent = fs.readFileSync(filePath, "utf-8");
+      const rows = parse(csvContent, { columns: true, skip_empty_lines: true, cast: true });
+      
+      // Extract month from filename
+      const monthMatch = file.match(/post_summary_(\d{4}-\d{2})\.csv/);
+      const month = monthMatch ? monthMatch[1] : "unknown";
+      
+      rows.forEach((row, index) => {
+        allPosts.push({
+          id: allPosts.length + index + 1,
+          postId: row.post_id,
+          platform: "facebook",
+          content: row.post_caption || "No caption available",
+          totalLikes: row.total_likes || 0,
+          numShares: row.num_shares || 0,
+          commentCount: row.comment_count || 0,
+          avgSentiment: row.avg_sentiment_score || 0,
+          sentimentVariance: row.sentiment_variance || 0,
+          negativeRatio: row.negative_comment_ratio || 0,
+          mainTopic: row.main_topic || "Unknown",
+          mostPositiveComment: row.most_positive_comment || "",
+          mostNegativeComment: row.most_negative_comment || "",
+          engagementRate: row.weighted_engagement_rate || 0,
+          analysisMonth: month,
+          createdAt: new Date(`${month}-01`).toISOString()
+        });
+      });
+    }
+    
+    return allPosts;
+  } catch (error) {
+    console.error("Error loading post summaries:", error);
+    return [];
+  }
+}
+
+function loadEnrichedComments() {
+  try {
+    const commentsDir = path.join(process.cwd(), "DASHBOARD FINAL 2", "enriched_data");
+    const commentFiles = fs.readdirSync(commentsDir).filter(file => file.startsWith("enriched_data_"));
+    
+    const allComments = [];
+    for (const file of commentFiles) {
+      const filePath = path.join(commentsDir, file);
+      const csvContent = fs.readFileSync(filePath, "utf-8");
+      const rows = parse(csvContent, { columns: true, skip_empty_lines: true, cast: true });
+      
+      // Extract month from filename
+      const monthMatch = file.match(/enriched_data_(\d{4}-\d{2})\.csv/);
+      const month = monthMatch ? monthMatch[1] : "unknown";
+      
+      rows.forEach((row, index) => {
+        if (row.text_for_analysis && row.text_for_analysis.trim() !== "") {
+          allComments.push({
+            id: allComments.length + index + 1,
+            postId: parseInt(row.post_id) || 0,
+            content: row.text_for_analysis || "",
+            originalContent: row.original_comment_for_context || "",
+            language: row.original_language || "unknown",
+            sentiment: row.sentiment_score || 0,
+            topic: row.topic || "Unknown",
+            likes: row.comment_likes || 0,
+            analysisMonth: month,
+            createdAt: new Date(`${month}-01`).toISOString()
+          });
+        }
+      });
+    }
+    
+    return allComments;
+  } catch (error) {
+    console.error("Error loading enriched comments:", error);
+    return [];
+  }
+}
+
+function loadNarrativeReports() {
+  try {
+    const reportsDir = path.join(process.cwd(), "DASHBOARD FINAL 2", "monthly_reports");
+    const reportFiles = fs.readdirSync(reportsDir).filter(file => file.startsWith("report-") && file.endsWith(".md"));
+    
+    const allReports = [];
+    for (const file of reportFiles) {
+      const filePath = path.join(reportsDir, file);
+      const content = fs.readFileSync(filePath, "utf-8");
+      
+      // Extract month from filename
+      const monthMatch = file.match(/report-(\d{4}-\d{2})\.md/);
+      const month = monthMatch ? monthMatch[1] : "unknown";
+      const [year, monthNum] = month.split("-");
+      
+      allReports.push({
+        id: allReports.length + 1,
+        month: monthNum,
+        year: parseInt(year),
+        title: `Astra Intelligence Report: ${month}`,
+        content: content,
+        summary: content.split('\n').slice(0, 5).join('\n') + '...',
+        createdAt: new Date(`${month}-01`).toISOString()
+      });
+    }
+    
+    return allReports;
+  } catch (error) {
+    console.error("Error loading narrative reports:", error);
+    return [];
+  }
+}
+
+function generateAnalyticsFromRealData() {
+  const posts = loadPostSummaries();
+  const comments = loadEnrichedComments();
+  const analytics = [];
+  
+  // Calculate total metrics
+  const totalPosts = posts.length;
+  const totalLikes = posts.reduce((sum, post) => sum + post.totalLikes, 0);
+  const totalShares = posts.reduce((sum, post) => sum + post.numShares, 0);
+  const totalComments = posts.reduce((sum, post) => sum + post.commentCount, 0);
+  const avgSentiment = posts.reduce((sum, post) => sum + post.avgSentiment, 0) / totalPosts;
+  const avgEngagement = posts.reduce((sum, post) => sum + post.engagementRate, 0) / totalPosts;
+  
+  // Sentiment distribution
+  const positiveComments = comments.filter(c => c.sentiment > 0.3).length;
+  const negativeComments = comments.filter(c => c.sentiment < -0.3).length;
+  const neutralComments = comments.length - positiveComments - negativeComments;
+  
+  // Topic distribution
+  const topicCounts = {};
+  posts.forEach(post => {
+    const topic = post.mainTopic || "Unknown";
+    topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+  });
+  
+  return [
+    { id: 1, metricType: "total_posts", value: totalPosts },
+    { id: 2, metricType: "total_likes", value: totalLikes },
+    { id: 3, metricType: "total_shares", value: totalShares },
+    { id: 4, metricType: "total_comments", value: totalComments },
+    { id: 5, metricType: "avg_sentiment", value: avgSentiment },
+    { id: 6, metricType: "engagement_rate", value: avgEngagement },
+    { id: 7, metricType: "positive_comments", value: positiveComments },
+    { id: 8, metricType: "negative_comments", value: negativeComments },
+    { id: 9, metricType: "neutral_comments", value: neutralComments },
+    { id: 10, metricType: "topic_distribution", value: JSON.stringify(topicCounts) }
+  ];
+}
 
 // Authentication middleware
 const authenticateToken = (req: any, res: any, next: any) => {
@@ -86,10 +246,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Post routes (protected)
+  // Post routes (protected) - Now using real data from DASHBOARD FINAL 2
   app.get("/api/posts", authenticateToken, async (req, res) => {
     try {
-      const posts = await storage.getAllPosts();
+      const posts = loadPostSummaries();
       res.json(posts);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch posts" });
@@ -120,12 +280,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Analytics routes (protected)
+  // Analytics routes (protected) - Now using real data from DASHBOARD FINAL 2
   app.get("/api/analytics", authenticateToken, async (req, res) => {
     try {
       const metricType = req.query.type as string;
-      const analytics = await storage.getAnalytics(metricType);
-      res.json(analytics);
+      const analytics = generateAnalyticsFromRealData();
+      // Filter by metric type if specified
+      const filteredAnalytics = metricType ? analytics.filter(a => a.metricType === metricType) : analytics;
+      res.json(filteredAnalytics);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch analytics" });
     }
@@ -161,10 +323,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Narrative report routes (protected)
+  // Narrative report routes (protected) - Now using real data from DASHBOARD FINAL 2
   app.get("/api/narrative-reports", authenticateToken, async (req, res) => {
     try {
-      const reports = await storage.getAllNarrativeReports();
+      const reports = loadNarrativeReports();
       res.json(reports);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch narrative reports" });
