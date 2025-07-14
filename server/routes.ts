@@ -17,6 +17,27 @@ function loadPostSummaries() {
     const summaryDir = path.join(process.cwd(), "DASHBOARD FINAL 2", "monthly_reports");
     const summaryFiles = fs.readdirSync(summaryDir).filter(file => file.startsWith("post_summary_"));
     
+    // Load translated data for English captions
+    const processedDir = path.join(process.cwd(), "DASHBOARD FINAL 2", "processed_data");
+    const translatedData = {};
+    
+    try {
+      const processedFiles = fs.readdirSync(processedDir).filter(file => file.startsWith("analysis_ready_"));
+      for (const file of processedFiles) {
+        const filePath = path.join(processedDir, file);
+        const csvContent = fs.readFileSync(filePath, "utf-8");
+        const rows = parse(csvContent, { columns: true, skip_empty_lines: true, cast: true });
+        
+        rows.forEach(row => {
+          if (row.post_id && row.text_for_analysis) {
+            translatedData[row.post_id] = row.text_for_analysis;
+          }
+        });
+      }
+    } catch (err) {
+      console.log("No translated data found, using original captions");
+    }
+    
     const allPosts = [];
     for (const file of summaryFiles) {
       const filePath = path.join(summaryDir, file);
@@ -34,6 +55,7 @@ function loadPostSummaries() {
           platform: "facebook",
           postCaption: row.post_caption || "No caption available",
           content: row.post_caption || "No caption available",
+          translatedContent: translatedData[row.post_id] || null,
           totalLikes: parseInt(row.total_likes) || 0,
           numShares: parseInt(row.num_shares) || 0,
           commentCount: parseInt(row.comment_count) || 0,

@@ -134,11 +134,16 @@ export default function IntelligenceSearch() {
       transition={{ duration: 0.5 }}
       className="glass-morphism p-6 rounded-xl"
     >
-      <div className="flex items-center mb-6">
-        <Brain className="w-6 h-6 text-electric-blue mr-3" />
-        <h3 className="text-xl font-heading font-bold text-white">
-          Political Intelligence Search
-        </h3>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <Brain className="w-6 h-6 text-electric-blue mr-3" />
+          <h3 className="text-xl font-heading font-bold text-white">
+            Political Intelligence Search
+          </h3>
+        </div>
+        <div className="text-sm text-gray-400">
+          Advanced AI-powered political analysis
+        </div>
       </div>
 
       {/* Search Interface */}

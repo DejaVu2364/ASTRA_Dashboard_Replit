@@ -14,6 +14,7 @@ export default function PostTable() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTopic, setSelectedTopic] = useState('All');
+  const [showEnglish, setShowEnglish] = useState(false);
   const postsPerPage = 10;
 
   const getTopicColor = (topic: string) => {
@@ -93,9 +94,10 @@ export default function PostTable() {
   // Get unique topics for filter
   const topics = ['All', ...new Set(posts?.map(post => post.mainTopic).filter(Boolean) || [])];
 
-  // Generate Facebook post URL
+  // Generate Facebook post URL - try multiple formats
   const getFacebookUrl = (postId: string) => {
-    return `https://www.facebook.com/permalink.php?story_fbid=${postId}&id=100064078686476`;
+    // Try the direct Facebook post URL format
+    return `https://www.facebook.com/${postId}`;
   };
 
   return (
@@ -122,6 +124,15 @@ export default function PostTable() {
               <option key={topic} value={topic}>{topic}</option>
             ))}
           </select>
+          
+          <Button
+            onClick={() => setShowEnglish(!showEnglish)}
+            variant="outline"
+            size="sm"
+            className={`${showEnglish ? 'bg-electric-blue text-obsidian-darker' : 'bg-obsidian-surface text-gray-300'} border-obsidian-border hover:bg-electric-blue hover:text-obsidian-darker`}
+          >
+            {showEnglish ? 'Show Original' : 'Show English'}
+          </Button>
           <div className="text-sm text-gray-400">
             Showing {displayPosts.length} of {filteredPosts.length} posts
           </div>
@@ -164,7 +175,15 @@ export default function PostTable() {
                   </a>
                 </td>
                 <td className="py-4 px-4 max-w-md">
-                  <div className="truncate">{post.content.substring(0, 100)}...</div>
+                  <div className="truncate">
+                    {showEnglish && post.translatedContent ? 
+                      post.translatedContent.substring(0, 100) : 
+                      post.content.substring(0, 100)
+                    }...
+                  </div>
+                  {showEnglish && post.translatedContent && (
+                    <div className="text-xs text-electric-blue mt-1">Translated</div>
+                  )}
                 </td>
                 <td className="py-4 px-4">
                   <div className="text-white font-medium">
