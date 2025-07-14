@@ -15,19 +15,21 @@ export default function SentimentChart() {
     const monthName = new Date(month + '-01').toLocaleDateString('en-US', { month: 'short' });
     
     const existing = acc.find(item => item.month === monthName);
+    const sentimentScore = parseFloat(post.avgSentimentScore) || 0;
+    
     if (existing) {
-      existing.scores.push(parseFloat(post.avgSentimentScore));
+      existing.scores.push(sentimentScore);
     } else {
       acc.push({
         month: monthName,
-        scores: [parseFloat(post.avgSentimentScore)]
+        scores: [sentimentScore]
       });
     }
     return acc;
   }, [] as Array<{month: string, scores: number[]}>)?.map(item => ({
     month: item.month,
     score: item.scores.reduce((sum, score) => sum + score, 0) / item.scores.length
-  })) || [];
+  })).filter(item => !isNaN(item.score)) || [];
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -73,6 +75,7 @@ export default function SentimentChart() {
               axisLine={false}
               tickLine={false}
               tick={{ fill: '#9ca3af', fontSize: 12 }}
+              domain={[-1, 1]}
               domain={[-1, 1]}
             />
             <Tooltip content={<CustomTooltip />} />
