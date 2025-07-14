@@ -2,20 +2,33 @@ import { motion } from "framer-motion";
 import { Search, Filter, Download, Calendar, BarChart3, PieChart, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { mockDashboardData } from "../data/mockData";
+import { useQuery } from "@tanstack/react-query";
+import type { Post } from "@shared/schema";
 
 export default function DataExplorer() {
+  const { data: posts, isLoading } = useQuery<Post[]>({
+    queryKey: ['/api/posts'],
+    staleTime: 5 * 60 * 1000,
+  });
+
   const visualizationTypes = [
     { id: 'bar', label: 'Bar Chart', icon: BarChart3, active: true },
     { id: 'pie', label: 'Pie Chart', icon: PieChart, active: false },
     { id: 'line', label: 'Line Chart', icon: TrendingUp, active: false },
   ];
 
+  // Calculate real topic counts from posts
+  const topicCounts = posts?.reduce((acc, post) => {
+    const topic = post.mainTopic || 'Unknown';
+    acc[topic] = (acc[topic] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>) || {};
+
   const filters = [
-    { id: 'all', label: 'All Topics', count: 12, active: true },
-    { id: 'economy', label: 'Economy', count: 4, active: false },
-    { id: 'environment', label: 'Environment', count: 3, active: false },
-    { id: 'praise', label: 'Praise', count: 5, active: false },
+    { id: 'all', label: 'All Topics', count: posts?.length || 0, active: true },
+    { id: 'economy', label: 'Economy', count: topicCounts.Economy || 0, active: false },
+    { id: 'environment', label: 'Environment', count: topicCounts.Environment || 0, active: false },
+    { id: 'praise', label: 'Praise', count: topicCounts.Praise || 0, active: false },
   ];
 
   return (
@@ -128,7 +141,7 @@ export default function DataExplorer() {
           </h3>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-400">
-              {mockDashboardData.length} records found
+              {posts?.length || 0} records found
             </span>
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-verified-green rounded-full animate-pulse" />
@@ -137,70 +150,77 @@ export default function DataExplorer() {
           </div>
         </div>
 
-        <div className="grid gap-4">
-          {mockDashboardData.map((item, index) => (
-            <motion.div
-              key={item.post_id}
-              className="data-card p-4 rounded-lg"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <code className="text-electric-blue text-sm font-mono">
-                      {item.post_id}
-                    </code>
-                    <Badge
-                      variant="outline"
-                      className={`
-                        ${item.main_topic === 'Praise' ? 'bg-verified-green/20 text-verified-green border-verified-green/30' : ''}
-                        ${item.main_topic === 'Economy' ? 'bg-warning-amber/20 text-warning-amber border-warning-amber/30' : ''}
-                        ${item.main_topic === 'Environment' ? 'bg-success-emerald/20 text-success-emerald border-success-emerald/30' : ''}
-                      `}
-                    >
-                      {item.main_topic}
-                    </Badge>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-electric-blue">Loading authentic data...</div>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {posts?.slice(0, 20).map((item, index) => (
+              <motion.div
+                key={item.postId}
+                className="data-card p-4 rounded-lg"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <code className="text-electric-blue text-sm font-mono">
+                        {item.postId}
+                      </code>
+                      <Badge
+                        variant="outline"
+                        className={`
+                          ${item.mainTopic === 'Praise' ? 'bg-verified-green/20 text-verified-green border-verified-green/30' : ''}
+                          ${item.mainTopic === 'Economy' ? 'bg-warning-amber/20 text-warning-amber border-warning-amber/30' : ''}
+                          ${item.mainTopic === 'Environment' ? 'bg-success-emerald/20 text-success-emerald border-success-emerald/30' : ''}
+                          ${item.mainTopic === 'Criticism' ? 'bg-danger-red/20 text-danger-red border-danger-red/30' : ''}
+                        `}
+                      >
+                        {item.mainTopic}
+                      </Badge>
+                    </div>
+                    <p className="text-white text-sm mb-2">{item.content.substring(0, 150)}...</p>
+                    <div className="flex items-center space-x-6 text-xs text-gray-400">
+                      <span>Likes: {item.totalLikes.toLocaleString()}</span>
+                      <span>Shares: {item.numShares.toLocaleString()}</span>
+                      <span>Comments: {item.commentCount.toLocaleString()}</span>
+                    </div>
                   </div>
-                  <p className="text-white text-sm mb-2">{item.post_caption}</p>
-                  <div className="flex items-center space-x-6 text-xs text-gray-400">
-                    <span>Likes: {item.total_likes.toLocaleString()}</span>
-                    <span>Shares: {item.num_shares.toLocaleString()}</span>
-                    <span>Comments: {item.comment_count.toLocaleString()}</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className={`text-lg font-bold ${
-                    item.avg_sentiment_score >= 0 ? 'text-verified-green' : 'text-danger-red'
-                  }`}>
-                    {item.avg_sentiment_score >= 0 ? '+' : ''}
-                    {item.avg_sentiment_score.toFixed(2)}
-                  </div>
-                  <div className="text-xs text-gray-400">Sentiment</div>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="text-xs text-gray-400">
-                    Engagement: {(item.weighted_engagement_rate * 100).toFixed(1)}%
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    Negative Ratio: {(item.negative_comment_ratio * 100).toFixed(1)}%
+                  <div className="text-right">
+                    <div className={`text-lg font-bold ${
+                      parseFloat(item.avgSentimentScore) >= 0 ? 'text-verified-green' : 'text-danger-red'
+                    }`}>
+                      {parseFloat(item.avgSentimentScore) >= 0 ? '+' : ''}
+                      {parseFloat(item.avgSentimentScore).toFixed(2)}
+                    </div>
+                    <div className="text-xs text-gray-400">Sentiment</div>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-electric-blue hover:text-electric-glow hover:bg-electric-blue/10"
-                >
-                  Analyze
-                </Button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="text-xs text-gray-400">
+                      Engagement: {(parseFloat(item.weightedEngagementRate) * 100).toFixed(1)}%
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      Negative Ratio: {(parseFloat(item.negativeCommentRatio) * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-electric-blue hover:text-electric-glow hover:bg-electric-blue/10"
+                  >
+                    Analyze
+                  </Button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </motion.div>
     </div>
   );

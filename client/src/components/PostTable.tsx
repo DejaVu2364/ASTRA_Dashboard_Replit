@@ -120,7 +120,7 @@ export default function PostTable() {
           >
             {posts.map((post, index) => (
               <motion.tr
-                key={post.id}
+                key={`post-${index}`}
                 variants={rowVariants}
                 className="border-b border-obsidian-border/50 hover:bg-obsidian-surface/50 transition-all"
                 whileHover={{ backgroundColor: "rgba(26, 26, 26, 0.5)" }}
@@ -129,7 +129,7 @@ export default function PostTable() {
                   {post.postId}
                 </td>
                 <td className="py-4 px-4 max-w-md">
-                  <div className="truncate">{post.caption}</div>
+                  <div className="truncate">{post.content.substring(0, 100)}...</div>
                 </td>
                 <td className="py-4 px-4">
                   <div className="text-white font-medium">

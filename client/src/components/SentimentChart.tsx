@@ -1,8 +1,33 @@
 import { motion } from "framer-motion";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, AreaChart } from "recharts";
-import { sentimentData } from "../data/mockData";
+import { useQuery } from "@tanstack/react-query";
+import type { Post } from "@shared/schema";
 
 export default function SentimentChart() {
+  const { data: posts, isLoading } = useQuery<Post[]>({
+    queryKey: ['/api/posts'],
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Calculate sentiment data by month from real data
+  const sentimentData = posts?.reduce((acc, post) => {
+    const month = post.analysisMonth || '2025-01';
+    const monthName = new Date(month + '-01').toLocaleDateString('en-US', { month: 'short' });
+    
+    const existing = acc.find(item => item.month === monthName);
+    if (existing) {
+      existing.scores.push(parseFloat(post.avgSentimentScore));
+    } else {
+      acc.push({
+        month: monthName,
+        scores: [parseFloat(post.avgSentimentScore)]
+      });
+    }
+    return acc;
+  }, [] as Array<{month: string, scores: number[]}>)?.map(item => ({
+    month: item.month,
+    score: item.scores.reduce((sum, score) => sum + score, 0) / item.scores.length
+  })) || [];
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -16,6 +41,24 @@ export default function SentimentChart() {
     }
     return null;
   };
+
+  if (isLoading) {
+    return (
+      <motion.div 
+        className="glass-morphism p-6 rounded-xl"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+      >
+        <h3 className="text-xl font-heading font-bold text-white mb-4">
+          Sentiment Analysis
+        </h3>
+        <div className="h-64 flex items-center justify-center">
+          <div className="text-electric-blue">Loading real data...</div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div 
@@ -40,7 +83,7 @@ export default function SentimentChart() {
               axisLine={false}
               tickLine={false}
               tick={{ fill: '#9ca3af', fontSize: 12 }}
-              domain={[0, 1]}
+              domain={[-1, 1]}
             />
             <Tooltip content={<CustomTooltip />} />
             <defs>
