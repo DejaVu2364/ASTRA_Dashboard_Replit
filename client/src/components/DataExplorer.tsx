@@ -4,17 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import type { Post } from "@shared/schema";
+import { useState } from "react";
 
 export default function DataExplorer() {
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeVisualization, setActiveVisualization] = useState('bar');
+  
   const { data: posts, isLoading } = useQuery<Post[]>({
     queryKey: ['/api/posts'],
     staleTime: 5 * 60 * 1000,
   });
 
   const visualizationTypes = [
-    { id: 'bar', label: 'Bar Chart', icon: BarChart3, active: true },
-    { id: 'pie', label: 'Pie Chart', icon: PieChart, active: false },
-    { id: 'line', label: 'Line Chart', icon: TrendingUp, active: false },
+    { id: 'bar', label: 'Bar Chart', icon: BarChart3 },
+    { id: 'pie', label: 'Pie Chart', icon: PieChart },
+    { id: 'line', label: 'Line Chart', icon: TrendingUp },
   ];
 
   // Calculate real topic counts from posts
@@ -25,10 +29,11 @@ export default function DataExplorer() {
   }, {} as Record<string, number>) || {};
 
   const filters = [
-    { id: 'all', label: 'All Topics', count: posts?.length || 0, active: true },
-    { id: 'economy', label: 'Economy', count: topicCounts.Economy || 0, active: false },
-    { id: 'environment', label: 'Environment', count: topicCounts.Environment || 0, active: false },
-    { id: 'praise', label: 'Praise', count: topicCounts.Praise || 0, active: false },
+    { id: 'all', label: 'All Topics', count: posts?.length || 0 },
+    { id: 'economy', label: 'Economy', count: topicCounts.Economy || 0 },
+    { id: 'environment', label: 'Environment', count: topicCounts.Environment || 0 },
+    { id: 'praise', label: 'Praise', count: topicCounts.Praise || 0 },
+    { id: 'criticism', label: 'Criticism', count: topicCounts.Criticism || 0 },
   ];
 
   return (
@@ -88,8 +93,9 @@ export default function DataExplorer() {
           {filters.map((filter) => (
             <motion.button
               key={filter.id}
+              onClick={() => setActiveFilter(filter.id)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                filter.active
+                activeFilter === filter.id
                   ? 'bg-electric-blue/20 text-electric-blue border border-electric-blue/30'
                   : 'bg-obsidian-surface text-gray-400 border border-obsidian-border hover:text-white'
               }`}
@@ -112,8 +118,9 @@ export default function DataExplorer() {
             return (
               <motion.button
                 key={type.id}
+                onClick={() => setActiveVisualization(type.id)}
                 className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all ${
-                  type.active
+                  activeVisualization === type.id
                     ? 'bg-electric-blue/20 text-electric-blue'
                     : 'text-gray-400 hover:text-white hover:bg-obsidian-surface'
                 }`}
@@ -156,9 +163,16 @@ export default function DataExplorer() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {posts?.slice(0, 20).map((item, index) => (
+            {posts?.filter(post => {
+              if (activeFilter === 'all') return true;
+              if (activeFilter === 'economy') return post.mainTopic === 'Economy';
+              if (activeFilter === 'environment') return post.mainTopic === 'Environment';
+              if (activeFilter === 'praise') return post.mainTopic === 'Praise';
+              if (activeFilter === 'criticism') return post.mainTopic === 'Criticism';
+              return true;
+            }).slice(0, 20).map((item, index) => (
               <motion.div
-                key={item.postId}
+                key={`data-explorer-post-${item.postId}-${index}`}
                 className="data-card p-4 rounded-lg"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -213,6 +227,9 @@ export default function DataExplorer() {
                     variant="ghost"
                     size="sm"
                     className="text-electric-blue hover:text-electric-glow hover:bg-electric-blue/10"
+                    onClick={() => {
+                      alert(`Analyzing Post ID: ${item.postId}\n\nTopic: ${item.mainTopic}\nSentiment: ${parseFloat(item.avgSentimentScore).toFixed(2)}\nEngagement: ${(parseFloat(item.weightedEngagementRate) * 100).toFixed(1)}%\nTotal Reach: ${(item.totalLikes + item.numShares + item.commentCount).toLocaleString()}`);
+                    }}
                   >
                     Analyze
                   </Button>
