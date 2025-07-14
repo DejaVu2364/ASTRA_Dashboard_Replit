@@ -1,0 +1,357 @@
+// Astra Intelligence Website with Integrated Political Dashboard
+
+// Task: Clone https://astra-intel-nexus.lovable.app/, integrate the political intelligence dashboard, optimize for SEO, and market Astra Intelligence as a premier political analytics platform.
+// Target Audience: Political strategists, social media managers, campaign analysts, and media professionals.
+// Goal: Create a responsive, SEO-optimized website showcasing Astra Intelligence’s cutting-edge tools with a linked dashboard.
+
+// Action 1: Install dependencies.
+// npm install react react-dom react-router-dom framer-motion tailwindcss autoprefixer axios express ws
+
+// Action 2: Configure Vite and PostCSS.
+// Path: vite.config.js
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
+  css: {
+    postcss: './postcss.config.cjs',
+  },
+});
+
+// Path: postcss.config.cjs
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+
+// Action 3: Define Tailwind styles.
+// Path: src/index.css
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #0F0F0F;
+  color: #E5E5E5;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #00A3FF, #00D4FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.card {
+  @apply bg-[#1E1E1E] p-6 rounded-lg border border-[#333333] shadow-lg;
+}
+
+.btn-primary {
+  @apply bg-[#00A3FF] text-[#0F0F0F] font-semibold rounded-lg px-6 py-3 hover:bg-[#00D4FF] transition-colors;
+}
+
+@media (max-width: 768px) {
+  .grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Action 4: Set up Express server to serve dashboard API.
+// Path: server.js
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.use(express.static('public'));
+app.get('/api/dashboard', (req, res) => {
+  res.json({ message: 'Redirect to dashboard', url: '/dashboard' });
+});
+
+app.listen(port, () => console.log(`Server at http://localhost:${port}`));
+
+// Action 5: Create main App component.
+// Path: src/App.jsx
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import Header from './components/Header';
+import Hero from './components/Hero';
+import Features from './components/Features';
+import Dashboard from './components/Dashboard';
+import Footer from './components/Footer';
+
+function App() {
+  return (
+    <div className="min-h-screen bg-[#0F0F0F] text-[#E5E5E5]">
+      <Header />
+      <motion.main
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Routes>
+          <Route path="/" element={<><Hero /><Features /></>} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </motion.main>
+      <Footer />
+    </div>
+  );
+}
+export default App;
+
+// Action 6: Create Header component.
+// Path: src/components/Header.jsx
+import { LucideGlobe } from 'lucide-react';
+
+const Header = () => {
+  return (
+    <header className="bg-[#1A1A1A] p-6 border-b border-[#333333] flex justify-between items-center">
+      <div className="flex items-center">
+        <div className="w-12 h-12 bg-[#00A3FF] rounded-full mr-6"></div>
+        <h1 className="text-3xl font-orbitron gradient-text">Astra Intelligence</h1>
+      </div>
+      <div className="flex items-center space-x-6">
+        <a href="#features" className="text-lg hover:text-[#00A3FF]">Features</a>
+        <a href="/dashboard" className="btn-primary">Access Dashboard</a>
+        <LucideGlobe className="text-[#E5E5E5]" size={24} />
+        <span className="text-lg">July 14, 2025</span>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
+
+// Action 7: Create Hero component.
+// Path: src/components/Hero.jsx
+import { motion } from 'framer-motion';
+
+const Hero = () => {
+  return (
+    <section className="py-20 text-center">
+      <motion.h2
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        className="text-5xl font-orbitron gradient-text mb-6"
+      >
+        Unleash Political Power with Astra Intelligence
+      </motion.h2>
+      <p className="text-xl text-[#A0A0A0] max-w-2xl mx-auto mb-8">
+        Transform your political strategy with real-time insights, sentiment analysis, and narrative tracking. Astra Intelligence empowers campaigns to win.
+      </p>
+      <a href="/dashboard" className="btn-primary">Start Analyzing Now</a>
+    </section>
+  );
+};
+
+export default Hero;
+
+// Action 8: Create Features component.
+// Path: src/components/Features.jsx
+import { LucideActivity, LucideSearch, LucideShield } from 'lucide-react';
+
+const Features = () => {
+  return (
+    <section id="features" className="py-16 px-6">
+      <h2 className="text-4xl font-orbitron gradient-text text-center mb-12">Why Choose Astra Intelligence?</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="card text-center">
+          <LucideActivity className="mx-auto text-[#00A3FF] mb-4" size={40} />
+          <h3 className="text-2xl mb-4">Real-Time Insights</h3>
+          <p className="text-[#A0A0A0]">Track sentiment and trends as they happen, giving you the edge in fast-moving political landscapes.</p>
+        </div>
+        <div className="card text-center">
+          <LucideSearch className="mx-auto text-[#00A3FF] mb-4" size={40} />
+          <h3 className="text-2xl mb-4">Narrative Scanner</h3>
+          <p className="text-[#A0A0A0]">Identify winning and losing narratives to shape your campaign strategy effectively.</p>
+        </div>
+        <div className="card text-center">
+          <LucideShield className="mx-auto text-[#00A3FF] mb-4" size={40} />
+          <h3 className="text-2xl mb-4">Secure & Reliable</h3>
+          <p className="text-[#A0A0A0]">Protect your data with state-of-the-art security, trusted by top political minds.</p>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Features;
+
+// Action 9: Create Dashboard component (integrated from previous response).
+// Path: src/components/Dashboard.jsx
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LucideDownload } from 'lucide-react';
+import axios from 'axios';
+
+const Dashboard = () => {
+  const [selectedMonth, setSelectedMonth] = useState('2024-11');
+  const [sentimentData, setSentimentData] = useState([]);
+  const [trendData, setTrendData] = useState([]);
+  const months = ['2024-06', '2024-07', '2024-08', '2024-09', '2024-10', '2024-11'];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('/api/data/' + selectedMonth, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
+        });
+        const data = response.data.split('\n').map(line => line.split(',').reduce((obj, val, i, arr) => {
+          obj[arr[0].split(',')[i]] = val; return obj;
+        }, {}));
+        const sentiment = data.map(row => ({
+          name: row.main_topic || 'N/A',
+          score: parseFloat(row.avg_sentiment_score) || 0,
+        })).filter(row => row.name !== 'N/A');
+        setSentimentData(sentiment);
+        const trends = data.map(row => ({
+          time: row.post_id,
+          value: parseFloat(row.weighted_engagement_rate) * 88000 || 0,
+        }));
+        setTrendData(trends);
+      } catch (error) {
+        console.error('Dashboard Data Error:', error);
+      }
+    };
+    fetchData();
+  }, [selectedMonth]);
+
+  const generateReport = () => {
+    const blob = new Blob(['Report for ' + selectedMonth], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `astra_report_${selectedMonth}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="p-8"
+    >
+      <h2 className="text-4xl font-orbitron gradient-text mb-6">Astra Intelligence Dashboard</h2>
+      <div className="mb-6 flex justify-between">
+        <select
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          className="bg-[#1E1E1E] text-[#E5E5E5] border border-[#333333] rounded-lg p-3"
+        >
+          {months.map(month => <option key={month} value={month}>{month}</option>)}
+        </select>
+        <button onClick={generateReport} className="btn-primary flex items-center">
+          <LucideDownload className="mr-2" size={18} /> Download Report
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-8">
+        <div className="card">
+          <h3 className="text-2xl mb-4">Sentiment Analysis</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={sentimentData}>
+              <CartesianGrid stroke="#333333" />
+              <XAxis dataKey="name" stroke="#E5E5E5" />
+              <YAxis stroke="#E5E5E5" domain={[-1, 1]} />
+              <Tooltip />
+              <Bar dataKey="score" fill="#00A3FF" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="card">
+          <h3 className="text-2xl mb-4">Engagement Trends</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={trendData}>
+              <CartesianGrid stroke="#333333" />
+              <XAxis dataKey="time" stroke="#E5E5E5" />
+              <YAxis stroke="#E5E5E5" />
+              <Tooltip />
+              <Line type="monotone" dataKey="value" stroke="#00A3FF" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default Dashboard;
+
+// Action 10: Create Footer component.
+// Path: src/components/Footer.jsx
+const Footer = () => {
+  return (
+    <footer className="bg-[#1A1A1A] p-6 text-center border-t border-[#333333]">
+      <p className="text-[#A0A0A0]">© 2025 Astra Intelligence. All rights reserved.</p>
+      <div className="mt-4 space-x-4">
+        <a href="/privacy" className="text-[#E5E5E5] hover:text-[#00A3FF]">Privacy Policy</a>
+        <a href="/terms" className="text-[#E5E5E5] hover:text-[#00A3FF]">Terms of Service</a>
+        <a href="/contact" className="text-[#E5E5E5] hover:text-[#00A3FF]">Contact Us</a>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;
+
+// Action 11: Add SEO metadata.
+// Path: public/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Astra Intelligence offers cutting-edge political intelligence tools, including real-time sentiment analysis and narrative tracking, for campaign success.">
+  <meta name="keywords" content="political intelligence, Astra Intelligence, campaign analytics, sentiment analysis, narrative tracking">
+  <meta name="author" content="Astra Intelligence">
+  <meta name="robots" content="index, follow">
+  <title>Astra Intelligence - Lead with Data-Driven Political Insights</title>
+  <link rel="canonical" href="https://your-username.astrad.repl.co">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Astra Intelligence",
+      "url": "https://your-username.astrad.repl.co",
+      "logo": "https://your-username.astrad.repl.co/logo.png",
+      "sameAs": [
+        "https://twitter.com/AstraIntel",
+        "https://www.linkedin.com/company/astraintelligence"
+      ],
+      "description": "Empower your political strategy with Astra Intelligence’s advanced analytics and real-time insights."
+    }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
+
+// Action 12: Initialize project and run.
+// mkdir public
+// cp -r FB\ Pipeline/monthly_summaries public/
+// npm run dev & node server.js
+
+// Action 13: Validate and test.
+// - Run in Replit: Access at https://your-username.astrad.repl.co.
+// - Verify responsive design, dashboard link, and SEO (check meta tags with browser dev tools).
+// - Test dashboard data fetch with sample CSV from FB Pipeline.
+// - Approve with "I approve" for further refinements.
