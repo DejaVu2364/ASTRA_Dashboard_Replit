@@ -8,6 +8,19 @@ The Astra Intelligence Pipeline is a sophisticated full-stack application design
 
 Preferred communication style: Simple, everyday language.
 
+## Streamlit Dashboard Analysis (January 2025)
+
+The user provided their original Streamlit dashboard implementation which includes:
+- Executive Performance Snapshot with sentiment gauge and donut charts
+- Core metrics with period-over-period comparisons
+- Top performing and controversial post highlights
+- Performance trends over time
+- Content strategy analysis with quadrant charts
+- Data explorer with filtering capabilities
+- AI briefing library with monthly reports
+
+This serves as the blueprint for enhancing the current React dashboard with similar sophisticated analytics and visualization capabilities.
+
 ## System Architecture
 
 ### Frontend Architecture
