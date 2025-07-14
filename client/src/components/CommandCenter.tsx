@@ -1,14 +1,20 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Award, TrendingUp, BarChart3, Search, Users } from "lucide-react";
 import KPICard from "./KPICard";
 import TopicChart from "./TopicChart";
 import SentimentChart from "./SentimentChart";
 import PostTable from "./PostTable";
 import IntelligenceSearch from "./IntelligenceSearch";
+import ExecutiveCockpit from "./ExecutiveCockpit";
+import PerformanceTrends from "./PerformanceTrends";
+import DataExplorer from "./DataExplorer";
 import type { Analytics, Post } from "@shared/schema";
-// Removed mock data import - using real API data now
 
 export default function CommandCenter() {
+  const [activeTab, setActiveTab] = useState('executive');
+  
   const { data: analytics, isLoading: analyticsLoading } = useQuery<Analytics[]>({
     queryKey: ['/api/analytics'],
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -66,47 +72,105 @@ export default function CommandCenter() {
     }
   ];
 
+  const tabs = [
+    { id: 'executive', label: 'Executive Overview', icon: Award },
+    { id: 'trends', label: 'Performance Trends', icon: TrendingUp },
+    { id: 'analysis', label: 'Content Analysis', icon: BarChart3 },
+    { id: 'explorer', label: 'Data Explorer', icon: Search },
+    { id: 'intelligence', label: 'Intelligence Search', icon: Users },
+  ];
+
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'executive':
+        return <ExecutiveCockpit />;
+      case 'trends':
+        return <PerformanceTrends />;
+      case 'analysis':
+        return (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {kpiData.map((kpi, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.1 + index * 0.1 }}
+                >
+                  <KPICard {...kpi} />
+                </motion.div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <TopicChart />
+              <SentimentChart />
+            </div>
+            <PostTable />
+          </div>
+        );
+      case 'explorer':
+        return <DataExplorer />;
+      case 'intelligence':
+        return <IntelligenceSearch />;
+      default:
+        return <ExecutiveCockpit />;
+    }
+  };
+
   return (
     <div className="flex-1 p-8 space-y-8">
       {/* Header */}
-      <div className="command-header p-6 rounded-xl">
-        <div>
-          <h2 className="text-3xl font-heading font-bold text-white">
-            Political Intelligence Dashboard
-          </h2>
-          <p className="text-gray-400 mt-1">
-            Real-time analytics from authentic social media data
-          </p>
+      <motion.div
+        className="command-header p-6 rounded-xl"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h2 className="text-3xl font-heading font-bold text-white mb-2">
+          Astra Intelligence Command Center
+        </h2>
+        <p className="text-gray-400">
+          Comprehensive political intelligence platform with real-time analytics
+        </p>
+      </motion.div>
+
+      {/* Navigation Tabs */}
+      <motion.div
+        className="glass-morphism p-2 rounded-xl"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <div className="flex space-x-2 overflow-x-auto">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center px-4 py-2 rounded-lg transition-all whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'bg-electric-blue text-obsidian-darker'
+                    : 'text-gray-400 hover:text-white hover:bg-obsidian-surface'
+                }`}
+              >
+                <Icon className="w-4 h-4 mr-2" />
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
-      </div>
-      
+      </motion.div>
 
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpiData.map((kpi) => (
-          <KPICard
-            key={kpi.title}
-            title={kpi.title}
-            value={kpi.value}
-            change={kpi.change}
-            icon={kpi.icon}
-            color={kpi.color}
-          />
-        ))}
-      </div>
-      
-      {/* Intelligence Search */}
-      <IntelligenceSearch />
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TopicChart />
-        <SentimentChart />
-      </div>
-      
-      {/* Intelligence Table */}
-      <PostTable />
+      {/* Dynamic Content */}
+      <motion.div
+        key={activeTab}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {renderActiveTab()}
+      </motion.div>
     </div>
   );
 }

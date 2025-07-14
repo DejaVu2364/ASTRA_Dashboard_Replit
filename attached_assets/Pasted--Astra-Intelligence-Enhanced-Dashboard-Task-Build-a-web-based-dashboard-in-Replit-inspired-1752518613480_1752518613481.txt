@@ -1,0 +1,445 @@
+// Astra Intelligence Enhanced Dashboard
+
+// Task: Build a web-based dashboard in Replit, inspired by the Streamlit version, with real-time data, authentication, SEO, and a professional UI for political intelligence.
+// Use FB Pipeline data from monthly_summaries, optimized for political strategists and social media managers.
+
+// Action 1: Install dependencies.
+// npm install react react-router-dom framer-motion recharts tailwindcss autoprefixer axios express ws bcryptjs jsonwebtoken plotly.js
+
+// Action 2: Configure Vite and PostCSS.
+// Path: vite.config.js
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
+  css: {
+    postcss: './postcss.config.cjs',
+  },
+});
+
+// Path: postcss.config.cjs
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+
+// Action 3: Define Tailwind styles.
+// Path: src/index.css
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #0F0F0F;
+  color: #E5E5E5;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #00A3FF, #00D4FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.card {
+  @apply bg-[#1E1E1E] p-6 rounded-lg border border-[#333333] shadow-lg;
+}
+
+.btn-primary {
+  @apply bg-[#00A3FF] text-[#0F0F0F] font-semibold rounded-lg px-6 py-3 hover:bg-[#00D4FF] transition-colors;
+}
+
+@media (max-width: 768px) {
+  .grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Action 4: Set up Express server with WebSocket and auth.
+// Path: server.js
+const express = require('express');
+const http = require('http');
+const { Server } = require('ws');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const app = express();
+const server = http.createServer(app);
+const wss = new Server({ server });
+const port = 3000;
+
+app.use(express.json());
+app.use(express.static('public'));
+
+const users = [{ username: 'admin', password: bcrypt.hashSync('password123', 10) }];
+const SECRET = 'your-secret-key';
+
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username);
+  if (user && bcrypt.compareSync(password, user.password)) {
+    const token = jwt.sign({ username }, SECRET, { expiresIn: '1h' });
+    res.json({ token });
+  } else {
+    res.status(401).json({ message: 'Invalid credentials' });
+  }
+});
+
+app.get('/api/data/:month', (req, res) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (!token || !jwt.verify(token, SECRET)) return res.status(401).send('Unauthorized');
+  const month = req.params.month;
+  const filePath = `public/FB Pipeline/monthly_summaries/post_summary_${month}.csv`;
+  if (!fs.existsSync(filePath)) return res.status(404).send('Data file not found');
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).send('Error reading file');
+    res.send(data);
+  });
+});
+
+wss.on('connection', (ws) => {
+  console.log('Client connected');
+  ws.on('message', (message) => {
+    ws.send(JSON.stringify({ month: '2024-11', update: 'New data available' }));
+  });
+  ws.on('close', () => console.log('Client disconnected'));
+});
+
+server.listen(port, () => console.log(`Server at http://localhost:${port}`));
+
+// Action 5: Create main App component.
+// Path: src/App.jsx
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import Header from './components/Header';
+import Dashboard from './components/Dashboard';
+import Login from './components/Login';
+
+function App() {
+  const token = localStorage.getItem('token');
+  const location = useLocation();
+
+  if (!token && location.pathname !== '/login') {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0F0F0F] text-[#E5E5E5]">
+      <Header />
+      <motion.main
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </motion.main>
+    </div>
+  );
+}
+export default App;
+
+// Action 6: Create Login component.
+// Path: src/components/Login.jsx
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const Login = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('/api/login', { username, password });
+      localStorage.setItem('token', res.data.token);
+      navigate('/dashboard');
+    } catch (error) {
+      alert('Login failed');
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center h-screen bg-[#0F0F0F]">
+      <form onSubmit={handleLogin} className="bg-[#1E1E1E] p-8 rounded-lg shadow-lg space-y-4 w-full max-w-md">
+        <h2 className="text-2xl font-orbitron gradient-text text-center">Astra Intelligence Login</h2>
+        <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" className="w-full bg-[#1A1A1A] border border-[#333333] rounded-lg p-3 text-[#E5E5E5]" />
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" className="w-full bg-[#1A1A1A] border border-[#333333] rounded-lg p-3 text-[#E5E5E5]" />
+        <button type="submit" className="btn-primary w-full">Login</button>
+      </form>
+    </div>
+  );
+};
+
+export default Login;
+
+// Action 7: Create Header component.
+// Path: src/components/Header.jsx
+import { LucideGlobe } from 'lucide-react';
+
+const Header = () => {
+  return (
+    <header className="bg-[#1A1A1A] p-6 border-b border-[#333333] flex justify-between items-center">
+      <div className="flex items-center">
+        <div className="w-12 h-12 bg-[#00A3FF] rounded-full mr-6"></div>
+        <h1 className="text-3xl font-orbitron gradient-text">Astra Intelligence</h1>
+      </div>
+      <div className="flex items-center space-x-6">
+        <a href="#dashboard" className="text-lg hover:text-[#00A3FF]">Dashboard</a>
+        <LucideGlobe className="text-[#E5E5E5]" size={24} />
+        <span className="text-lg">July 15, 2025</span>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
+
+// Action 8: Create Dashboard component.
+// Path: src/components/Dashboard.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import Plotly from 'plotly.js-dist';
+import { LucideDownload, LucideFilter, LucideCalendar } from 'lucide-react';
+import axios from 'axios';
+import { w3cwebsocket as W3CWebSocket } from 'ws';
+
+const Dashboard = () => {
+  const [selectedMonth, setSelectedMonth] = useState('2024-11');
+  const [sentimentData, setSentimentData] = useState([]);
+  const [trendData, setTrendData] = useState([]);
+  const [avgSentiment, setAvgSentiment] = useState(0);
+  const [avgEngagement, setAvgEngagement] = useState(0);
+  const [topics, setTopics] = useState([]);
+  const [selectedTopics, setSelectedTopics] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState(null);
+  const ws = useRef(null);
+  const months = ['2024-06', '2024-07', '2024-08', '2024-09', '2024-10', '2024-11'];
+
+  useEffect(() => {
+    ws.current = new W3CWebSocket('ws://localhost:3000');
+    ws.current.onmessage = (message) => {
+      const data = JSON.parse(message.data);
+      if (data.month === selectedMonth) fetchData();
+    };
+
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`/api/data/${selectedMonth}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        const lines = response.data.trim().split('\n');
+        if (lines.length < 2) throw new Error('Empty or invalid CSV data');
+        const headers = lines[0].split(',').map(h => h.trim());
+        const data = lines.slice(1).map(line => {
+          const values = line.split(',').map(v => v.trim());
+          return headers.reduce((obj, header, i) => {
+            obj[header] = values[i] || '';
+            return obj;
+          }, {});
+        });
+
+        const validData = data.filter(row => 
+          row.post_id && row.main_topic && (parseFloat(row.avg_sentiment_score) || parseFloat(row.weighted_engagement_rate))
+        );
+        if (validData.length === 0) throw new Error('No valid data with sentiment or engagement');
+
+        const uniqueTopics = [...new Set(validData.map(row => row.main_topic).filter(t => t !== 'N/A'))];
+        setTopics(uniqueTopics);
+        setSelectedTopics(uniqueTopics);
+
+        const filteredData = validData.filter(row => 
+          selectedTopics.includes(row.main_topic) && 
+          (searchTerm === '' || row.post_caption.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+        const sentiment = filteredData.map(row => ({
+          name: row.main_topic || 'N/A',
+          score: parseFloat(row.avg_sentiment_score) || 0,
+        })).filter(row => row.name !== 'N/A');
+        setSentimentData(sentiment);
+
+        const trends = filteredData.map(row => ({
+          time: row.post_id,
+          value: parseFloat(row.weighted_engagement_rate) * 88000 || 0,
+        }));
+        setTrendData(trends);
+
+        setAvgSentiment(parseFloat(filteredData.reduce((sum, row) => sum + (parseFloat(row.avg_sentiment_score) || 0), 0) / filteredData.length) || 0);
+        setAvgEngagement(parseFloat(filteredData.reduce((sum, row) => sum + (parseFloat(row.weighted_engagement_rate) || 0), 0) / filteredData.length) || 0);
+        setError(null);
+      } catch (err) {
+        console.error('Dashboard Error:', err.message);
+        setError(err.message);
+      }
+    };
+    fetchData();
+    return () => ws.current?.close();
+  }, [selectedMonth, selectedTopics, searchTerm]);
+
+  const generateGaugeChart = () => {
+    const element = document.getElementById('gauge-chart');
+    const trace = {
+      type: 'indicator',
+      mode: 'gauge+number+delta',
+      value: avgSentiment,
+      delta: { reference: 0, increasing: { color: 'green' }, decreasing: { color: 'red' } },
+      gauge: {
+        axis: { range: [-1, 1], tickwidth: 1, tickcolor: '#E5E5E5' },
+        bar: { color: '#00A3FF' },
+        bgcolor: '#1E1E1E',
+        borderwidth: 2,
+        bordercolor: '#333333',
+        steps: [
+          { range: [-1, -0.2], color: '#FF7C7C' },
+          { range: [-0.2, 0.2], color: '#FFF87C' },
+          { range: [0.2, 1], color: '#8CFF7C' }
+        ],
+        threshold: { line: { color: 'red', width: 4 }, thickness: 0.75, value: 0 }
+      }
+    };
+    Plotly.newPlot(element, [trace], { height: 300, margin: { l: 10, r: 10, t: 40, b: 10 } });
+  };
+
+  useEffect(() => {
+    generateGaugeChart();
+  }, [avgSentiment]);
+
+  const generateReport = () => {
+    const blob = new Blob([`Report for ${selectedMonth}: Avg Sentiment: ${avgSentiment.toFixed(2)}, Avg Engagement: ${avgEngagement.toFixed(3)}`], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `astra_report_${selectedMonth}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="p-8"
+    >
+      <h2 className="text-4xl font-orbitron gradient-text mb-6">Astra Intelligence Dashboard</h2>
+      <div className="mb-6 flex justify-between items-center flex-wrap gap-4">
+        <div className="flex items-center space-x-4">
+          <LucideCalendar className="text-[#00A3FF]" size={24} />
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="bg-[#1E1E1E] text-[#E5E5E5] border border-[#333333] rounded-lg p-3"
+          >
+            {months.map(month => <option key={month} value={month}>{month}</option>)}
+          </select>
+        </div>
+        <div className="flex items-center space-x-4">
+          <LucideFilter className="text-[#00A3FF]" size={24} />
+          <select
+            multiple
+            value={selectedTopics}
+            onChange={(e) => setSelectedTopics([...e.target.selectedOptions].map(o => o.value))}
+            className="bg-[#1E1E1E] text-[#E5E5E5] border border-[#333333] rounded-lg p-3 h-24"
+          >
+            {topics.map(topic => <option key={topic} value={topic}>{topic}</option>)}
+          </select>
+          <input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search Caption..."
+            className="bg-[#1E1E1E] text-[#E5E5E5] border border-[#333333] rounded-lg p-3"
+          />
+        </div>
+        <button onClick={generateReport} className="btn-primary flex items-center">
+          <LucideDownload className="mr-2" size={18} /> Download Report
+        </button>
+      </div>
+      {error && (
+        <div className="mb-4 p-4 bg-red-900 rounded-lg flex items-center">
+          <LucideAlertCircle className="mr-2 text-red-400" size={20} />
+          <span className="text-red-400">{error}</span>
+        </div>
+      )}
+      <div className="grid grid-cols-3 gap-8">
+        <div className="card">
+          <h3 className="text-2xl mb-4">Sentiment Gauge</h3>
+          <div id="gauge-chart" style={{ width: '100%', height: '300px' }}></div>
+        </div>
+        <div className="card col-span-2">
+          <h3 className="text-2xl mb-4">Key Metrics</h3>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="p-4 bg-[#222222] rounded-lg">
+              <p className="text-sm text-[#A0A0A0]">Avg. Sentiment</p>
+              <p className="text-2xl">{avgSentiment.toFixed(2)}</p>
+            </div>
+            <div className="p-4 bg-[#222222] rounded-lg">
+              <p className="text-sm text-[#A0A0A0]">Avg. Engagement</p>
+              <p className="text-2xl">{(avgEngagement * 100).toFixed(2)}%</p>
+            </div>
+            <div className="p-4 bg-[#222222] rounded-lg">
+              <p className="text-sm text-[#A0A0A0]">Posts Analyzed</p>
+              <p className="text-2xl">{trendData.length}</p>
+            </div>
+          </div>
+        </div>
+        <div className="card">
+          <h3 className="text-2xl mb-4">Sentiment Analysis</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={sentimentData}>
+              <CartesianGrid stroke="#333333" />
+              <XAxis dataKey="name" stroke="#E5E5E5" />
+              <YAxis stroke="#E5E5E5" domain={[-1, 1]} />
+              <Tooltip />
+              <Bar dataKey="score" fill="#00A3FF" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="card">
+          <h3 className="text-2xl mb-4">Engagement Trends</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={trendData}>
+              <CartesianGrid stroke="#333333" />
+              <XAxis dataKey="time" stroke="#E5E5E5" />
+              <YAxis stroke="#E5E5E5" />
+              <Tooltip />
+              <Line type="monotone" dataKey="value" stroke="#00A3FF" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default Dashboard;
+
+// Action 9: Initialize project and run.
+// mkdir public
+// cp -r FB\ Pipeline/monthly_summaries public/
+// npm run dev & node server.js
+
+// Action 10: Validate and test.
+// - Run in Replit: Access at https://your-username.astrad.repl.co/dashboard.
+// - Verify login (admin/password123), filters, gauge chart, and metrics with pipeline data.
+// - Check console for errors (e.g., CSV parsing) and adjust file paths or data format.
+// - Approve with "I approve" for further enhancements.
