@@ -1,0 +1,600 @@
+// Enhanced Flagship Political Intelligence Dashboard
+
+// Task: Enhance the dashboard with multi-month analytics, user auth, interactive Gemini reports, and data validation.
+// Use DASHBOARD FINAL 2 data from FB Pipeline, tailored for political strategists and social media managers.
+
+// Action 1: Install dependencies.
+// npm install react react-router-dom framer-motion recharts tailwindcss autoprefixer @mvpblocks/react-table lucide-react papaparse axios express ws bcryptjs jsonwebtoken
+
+// Action 2: Configure Vite and PostCSS.
+// Path: vite.config.js
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
+  },
+  css: {
+    postcss: './postcss.config.cjs',
+  },
+});
+
+// Path: postcss.config.cjs
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+
+// Action 3: Define Tailwind styles.
+// Path: src/index.css
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #0F0F0F;
+  color: #E5E5E5;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #00A3FF, #00D4FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.card {
+  @apply bg-[#1E1E1E] p-8 rounded-lg border border-[#333333] shadow-lg;
+}
+
+.hover-glow {
+  @apply transition-all duration-300;
+}
+
+.hover-glow:hover {
+  @apply shadow-[0_0_15px_#00A3FF];
+}
+
+.btn-primary {
+  @apply bg-[#00A3FF] text-[#0F0F0F] font-semibold rounded-lg px-6 py-3 hover:bg-[#00D4FF] transition-colors;
+}
+
+@media (max-width: 768px) {
+  .grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Action 4: Set up Express server with auth and data validation.
+// Path: server.js
+const express = require('express');
+const http = require('http');
+const { Server } = require('ws');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const app = express();
+const server = http.createServer(app);
+const wss = new Server({ server });
+const port = 3000;
+
+app.use(express.json());
+app.use(express.static('public'));
+
+const users = [{ username: 'admin', password: bcrypt.hashSync('password123', 10) }]; // Use env vars in production
+const SECRET = 'your-secret-key'; // Use Replit secret in production
+
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username);
+  if (user && bcrypt.compareSync(password, user.password)) {
+    const token = jwt.sign({ username }, SECRET, { expiresIn: '1h' });
+    res.json({ token });
+  } else {
+    res.status(401).json({ message: 'Invalid credentials' });
+  }
+});
+
+app.get('/api/data/:month', (req, res) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+  if (!token || !jwt.verify(token, SECRET)) return res.status(401).send('Unauthorized');
+  const month = req.params.month;
+  const filePath = `public/FB Pipeline/monthly_summaries/post_summary_${month}.csv`;
+  if (!fs.existsSync(filePath)) return res.status(404).send('Data file not found');
+  try {
+    res.sendFile(filePath, { root: __dirname });
+  } catch (error) {
+    res.status(500).send('Error reading file');
+  }
+});
+
+wss.on('connection', (ws) => {
+  console.log('Client connected');
+  ws.on('message', (message) => {
+    console.log(`Received: ${message}`);
+    ws.send(JSON.stringify({ month: '2024-11', update: 'New data available' }));
+  });
+  ws.on('close', () => console.log('Client disconnected'));
+});
+
+server.listen(port, () => console.log(`Server at http://localhost:${port}`));
+
+// Action 5: Update App.jsx with auth.
+// Path: src/App.jsx
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import CommandCenter from './components/tabs/CommandCenter';
+import Login from './components/Login';
+
+function App() {
+  const token = localStorage.getItem('token');
+  const location = useLocation();
+
+  if (!token && location.pathname !== '/login') {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0F0F0F] text-[#E5E5E5] overflow-hidden">
+      <Header />
+      <div className="flex">
+        <Sidebar />
+        <main className="ml-[300px] p-8 flex-1">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4 }}
+            className="relative z-10"
+          >
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/dashboard/*" element={<CommandCenter />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </motion.div>
+        </main>
+      </div>
+    </div>
+  );
+}
+export default App;
+
+// Action 6: Create Login component.
+// Path: src/components/Login.jsx
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const Login = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('/api/login', { username, password });
+      localStorage.setItem('token', res.data.token);
+      navigate('/dashboard/command-center');
+    } catch (error) {
+      alert('Login failed');
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-center h-screen bg-[#0F0F0F]">
+      <form onSubmit={handleLogin} className="bg-[#1E1E1E] p-8 rounded-lg shadow-lg space-y-4 w-full max-w-md">
+        <h2 className="text-2xl font-orbitron gradient-text text-center">Astra Fusion Login</h2>
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Username"
+          className="w-full bg-[#1A1A1A] border border-[#333333] rounded-lg p-3 text-[#E5E5E5] focus:outline-none focus:ring-2 focus:ring-[#00A3FF]"
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          className="w-full bg-[#1A1A1A] border border-[#333333] rounded-lg p-3 text-[#E5E5E5] focus:outline-none focus:ring-2 focus:ring-[#00A3FF]"
+        />
+        <button type="submit" className="btn-primary w-full">Login</button>
+      </form>
+    </div>
+  );
+};
+
+export default Login;
+
+// Action 7: Update Header, Sidebar, and CommandCenter.
+// Path: src/components/Header.jsx
+import { LucideGlobe } from 'lucide-react';
+
+const Header = () => {
+  return (
+    <header className="bg-[#1A1A1A] p-6 border-b border-[#333333] flex justify-between items-center">
+      <div className="flex items-center">
+        <div className="w-12 h-12 bg-[#00A3FF] rounded-full mr-6"></div> {/* Logo Placeholder */}
+        <h1 className="text-3xl font-orbitron gradient-text">Astra Fusion Intelligence</h1>
+      </div>
+      <div className="flex items-center space-x-6">
+        <LucideGlobe className="text-[#E5E5E5]" size={24} />
+        <span className="text-lg">July 14, 2025</span>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
+
+// Path: src/components/Sidebar.jsx
+import { motion } from 'framer-motion';
+import { LucideMenu, LucideBell } from 'lucide-react';
+
+const Sidebar = () => {
+  return (
+    <motion.aside
+      initial={{ x: -300 }}
+      animate={{ x: 0 }}
+      transition={{ duration: 0.5 }}
+      className="fixed w-[300px] h-screen bg-[#1A1A1A] p-8 flex flex-col border-r border-[#333333]"
+    >
+      <h2 className="text-4xl font-orbitron gradient-text mb-10">Astra Fusion</h2>
+      <nav className="flex-1">
+        <ul className="space-y-6">
+          <li className="text-xl font-inter hover:text-[#00A3FF] cursor-pointer">Command Center</li>
+          <li className="text-xl font-inter hover:text-[#00A3FF] cursor-pointer">Narrative Scanner</li>
+          <li className="text-xl font-inter hover:text-[#00A3FF] cursor-pointer">Insights Challenge</li>
+          <li className="text-xl font-inter hover:text-[#00A3FF] cursor-pointer">Chat with Astra</li>
+        </ul>
+      </nav>
+      <div className="mt-10">
+        <div className="flex items-center justify-between p-4 bg-[#1E1E1E] rounded-lg">
+          <span className="text-base font-inter">Alerts</span>
+          <LucideBell className="text-[#00A3FF]" size={24} />
+        </div>
+      </div>
+    </motion.aside>
+  );
+};
+
+export default Sidebar;
+
+// Path: src/components/tabs/CommandCenter.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, useAnimation } from 'framer-motion';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LucideActivity, LucideDownload, LucideRefreshCw, LucideEdit } from 'lucide-react';
+import { Table, Badge } from '@mvpblocks/react-table';
+import Papa from 'papaparse';
+import axios from 'axios';
+import { w3cwebsocket as W3CWebSocket } from 'ws';
+
+const CommandCenter = () => {
+  const controls = useAnimation();
+  const [selectedMonth, setSelectedMonth] = useState('2024-11');
+  const [sentimentData, setSentimentData] = useState([]);
+  const [trendData, setTrendData] = useState([]);
+  const [postData, setPostData] = useState([]);
+  const [socialAnalysis, setSocialAnalysis] = useState({ metrics: {}, recommendations: [] });
+  const [geminiReport, setGeminiReport] = useState('');
+  const [multiMonthData, setMultiMonthData] = useState([]);
+  const [reportPreview, setReportPreview] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const months = ['2024-06', '2024-07', '2024-08', '2024-09', '2024-10', '2024-11'];
+  const ws = useRef(null);
+
+  useEffect(() => {
+    ws.current = new W3CWebSocket('ws://localhost:3000');
+    ws.current.onmessage = (message) => {
+      const data = JSON.parse(message.data);
+      if (data.month === selectedMonth) fetchData();
+    };
+
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`/api/data/${selectedMonth}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        Papa.parse(response.data, {
+          header: true,
+          complete: (result) => {
+            const data = result.data;
+            if (!data.length || !data[0].post_id) throw new Error('Invalid CSV data');
+            const sentiment = data.map(row => ({
+              name: row.main_topic || 'N/A',
+              score: parseFloat(row.avg_sentiment_score) || 0,
+            })).filter(row => row.name !== 'N/A');
+            setSentimentData(sentiment);
+
+            const trends = data.map(row => ({
+              time: row.post_id,
+              value: parseFloat(row.weighted_engagement_rate) * 88000 || 0,
+            }));
+            setTrendData(trends);
+
+            setPostData(data.map(row => ({
+              post_id: row.post_id,
+              caption: row.post_caption || 'No caption',
+              topic: row.main_topic || 'N/A',
+              avg_sentiment: parseFloat(row.avg_sentiment_score) || 0,
+              likes: parseInt(row.total_likes) || 0,
+              shares: parseInt(row.num_shares) || 0,
+              weighted_engagement_rate: parseFloat(row.weighted_engagement_rate) || 0,
+            })));
+
+            const totalEngagement = data.reduce((sum, row) => sum + (parseInt(row.total_likes) || 0) + (parseInt(row.comment_count) || 0) + 2 * (parseInt(row.num_shares) || 0), 0);
+            const avgSentiment = data.reduce((sum, row) => sum + (parseFloat(row.avg_sentiment_score) || 0), 0) / data.length;
+            const impressions = data.reduce((sum, row) => sum + (parseInt(row.total_likes) || 0) * 10, 0);
+            setSocialAnalysis({
+              metrics: { weighted_engagement_rate: totalEngagement / 88000, avg_sentiment, impressions, alerts: data.filter(row => parseFloat(row.avg_sentiment_score) < -0.5).length },
+              recommendations: [
+                `Focus on ${data.sort((a, b) => (parseFloat(b.avg_sentiment_score) || 0) - (parseFloat(a.avg_sentiment_score) || 0))[0].main_topic} (${data[0].avg_sentiment_score}).`,
+                `Address ${data.sort((a, b) => (parseFloat(a.avg_sentiment_score) || 0) - (parseFloat(b.avg_sentiment_score) || 0))[0].main_topic} (${data[0].avg_sentiment_score}).`,
+              ],
+            });
+
+            setGeminiReport(`
+# Confidential Political Intelligence Brief for ${selectedMonth}
+## Executive Summary
+Sentiment: ${avgSentiment.toFixed(2)}.
+## Threat Analysis
+- Topic: ${postData[0]?.topic}, Sentiment: ${postData[0]?.avg_sentiment?.toFixed(2)}.
+## Recommendations
+${socialAnalysis.recommendations.join('\n')}
+
+# Performance Analysis
+## Summary
+Engagement: ${(totalEngagement / 88000 * 100).toFixed(2)}%.
+## Metrics
+Impressions: ${impressions}.
+## Growth Recommendations
+${socialAnalysis.recommendations.join('\n')}
+            `);
+            setReportPreview(geminiReport);
+
+            const multiMonth = await Promise.all(months.map(m => axios.get(`/api/data/${m}`).then(r => ({
+              month: m,
+              avgSentiment: Papa.parse(r.data, { header: true }).data.reduce((sum, row) => sum + (parseFloat(row.avg_sentiment_score) || 0), 0) / r.data.length,
+            })).catch(() => ({ month: m, avgSentiment: 0 }))));
+            setMultiMonthData(multiMonth);
+            controls.start({ opacity: 1, y: 0 });
+          },
+          error: (error) => console.error('CSV Parse Error:', error.message),
+        });
+      } catch (error) {
+        console.error('Fetch Error:', error.message);
+      }
+    };
+    fetchData();
+    return () => ws.current?.close();
+  }, [selectedMonth, controls]);
+
+  const generateReport = () => {
+    const blob = new Blob([reportPreview], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `astra_report_${selectedMonth}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const scanNarratives = () => {
+    const winning = postData.filter(row => parseFloat(row.avg_sentiment) > 0.5).map(row => ({ topic: row.topic, sentiment: row.avg_sentiment }));
+    const losing = postData.filter(row => parseFloat(row.avg_sentiment) < -0.5).map(row => ({ topic: row.topic, sentiment: row.avg_sentiment }));
+    return { winning, losing };
+  };
+  const narratives = scanNarratives();
+
+  const [challengeScore, setChallengeScore] = useState(0);
+  const challenges = [
+    { question: 'Highest sentiment topic?', answer: postData.sort((a, b) => (parseFloat(b.avg_sentiment) || 0) - (parseFloat(a.avg_sentiment) || 0))[0].topic, points: 10 },
+    { question: 'Most engaged month?', answer: '2024-11', points: 15 },
+  ];
+  const [currentChallenge, setCurrentChallenge] = useState(challenges[0]);
+  const [userAnswer, setUserAnswer] = useState('');
+
+  const checkAnswer = () => {
+    if (userAnswer.toLowerCase() === currentChallenge.answer.toLowerCase()) {
+      setChallengeScore(challengeScore + currentChallenge.points);
+      setCurrentChallenge(challenges[Math.floor(Math.random() * challenges.length)]);
+      setUserAnswer('');
+    }
+  };
+
+  const [chatQuery, setChatQuery] = useState('');
+  const [chatResponse, setChatResponse] = useState('');
+  const chatWithAstra = async () => {
+    const response = `Pipeline data (${selectedMonth}): ${socialAnalysis.recommendations[0]}. Web: [Simulated trend - focus on ${postData[0]?.topic}].`;
+    setChatResponse(response);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={controls}
+      transition={{ duration: 0.5 }}
+      className="grid grid-cols-3 gap-8"
+    >
+      <div className="col-span-3 mb-6 flex justify-between items-center">
+        <select
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          className="bg-[#1E1E1E] text-[#E5E5E5] border border-[#333333] rounded-lg p-3 text-lg"
+        >
+          {months.map(month => <option key={month} value={month}>{month}</option>)}
+        </select>
+        <button onClick={generateReport} className="btn-primary flex items-center">
+          <LucideDownload className="mr-2" size={18} /> Gemini Report
+        </button>
+        <button onClick={() => window.location.reload()} className="btn-primary flex items-center">
+          <LucideRefreshCw className="mr-2" size={18} /> Refresh
+        </button>
+      </div>
+
+      <div className="space-y-6">
+        <motion.div className="card">
+          <h3 className="text-2xl font-orbitron gradient-text mb-4">Sentiment Analysis</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={sentimentData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
+              <XAxis dataKey="name" stroke="#E5E5E5" fontSize={12} />
+              <YAxis stroke="#E5E5E5" domain={[-1, 1]} fontSize={12} />
+              <Tooltip />
+              <Bar dataKey="score" fill="#00A3FF" barSize={20} />
+            </BarChart>
+          </ResponsiveContainer>
+        </motion.div>
+        <motion.div className="card">
+          <h3 className="text-2xl font-orbitron gradient-text mb-4">Narrative Trends</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={trendData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
+              <XAxis dataKey="time" stroke="#E5E5E5" fontSize={12} />
+              <YAxis stroke="#E5E5E5" fontSize={12} />
+              <Tooltip />
+              <Line type="monotone" dataKey="value" stroke="#00A3FF" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </motion.div>
+        <motion.div className="card">
+          <h3 className="text-2xl font-orbitron gradient-text mb-4">Multi-Month Sentiment</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={multiMonthData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#333333" />
+              <XAxis dataKey="month" stroke="#E5E5E5" fontSize={12} />
+              <YAxis stroke="#E5E5E5" fontSize={12} />
+              <Tooltip />
+              <Line type="monotone" dataKey="avgSentiment" stroke="#00A3FF" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </motion.div>
+      </div>
+
+      <div className="space-y-6">
+        <motion.div className="card">
+          <h3 className="text-2xl font-orbitron gradient-text mb-4">Narrative Scanner</h3>
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-xl font-inter text-[#E5E5E5]">Winning</h4>
+              <ul className="list-disc list-inside text-sm text-[#A0A0A0]">
+                {narratives.winning.map((n, i) => <li key={i}>{n.topic} ({n.sentiment.toFixed(2)})</li>)}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-xl font-inter text-[#E5E5E5]">Losing</h4>
+              <ul className="list-disc list-inside text-sm text-[#A0A0A0]">
+                {narratives.losing.map((n, i) => <li key={i}>{n.topic} ({n.sentiment.toFixed(2)})</li>)}
+              </ul>
+            </div>
+          </div>
+        </motion.div>
+        <motion.div className="card">
+          <h3 className="text-2xl font-orbitron gradient-text mb-4">Social Metrics</h3>
+          <div className="space-y-4">
+            <p className="text-base text-[#A0A0A0]">Engagement: {(socialAnalysis.metrics.weighted_engagement_rate * 100).toFixed(2)}%</p>
+            <p className="text-base text-[#A0A0A0]">Avg. Sentiment: {socialAnalysis.metrics.avg_sentiment?.toFixed(2) || 'N/A'}</p>
+          </div>
+        </motion.div>
+      </div>
+
+      <div className="space-y-6">
+        <motion.div className="card">
+          <h3 className="text-2xl font-orbitron gradient-text mb-4">Post Intelligence</h3>
+          <Table
+            columns={[
+              { header: 'ID', accessor: 'post_id', cell: (row) => <span className="text-[#E5E5E5]">{row.post_id}</span> },
+              { header: 'Caption', accessor: 'caption', cell: (row) => <span className="text-[#E5E5E5]">{row.caption.substring(0, 100)}...</span> },
+              { header: 'Topic', accessor: 'topic', cell: (row) => <Badge color="blue" className="text-sm">{row.topic}</Badge> },
+              { header: 'Sentiment', accessor: 'avg_sentiment', cell: (row) => <span className={row.avg_sentiment > 0 ? 'text-green-400' : 'text-red-400'}>{row.avg_sentiment.toFixed(2)}</span> },
+              { header: 'Engagement', accessor: 'weighted_engagement_rate', cell: (row) => <span className="text-right text-[#E5E5E5]">{(row.weighted_engagement_rate * 100).toFixed(2)}%</span> },
+            ]}
+            data={postData}
+            className="w-full text-[#E5E5E5]"
+            rowClassName="hover:bg-[#222222]"
+          />
+        </motion.div>
+        <motion.div className="card">
+          <h3 className="text-2xl font-orbitron gradient-text mb-4">Insights Challenge</h3>
+          <div className="space-y-4">
+            <p className="text-lg font-inter">Score: {challengeScore}</p>
+            <p className="text-lg font-inter">{currentChallenge.question}</p>
+            <input
+              value={userAnswer}
+              onChange={(e) => setUserAnswer(e.target.value)}
+              className="w-full bg-[#1A1A1A] border border-[#333333] rounded-lg p-3 text-[#E5E5E5]"
+            />
+            <button onClick={checkAnswer} className="btn-primary">Submit</button>
+          </div>
+        </motion.div>
+      </div>
+
+      <div className="space-y-6">
+        <motion.div className="card h-full">
+          <h3 className="text-2xl font-orbitron gradient-text mb-4">Chat with Astra</h3>
+          <div className="space-y-4">
+            <input
+              value={chatQuery}
+              onChange={(e) => setChatQuery(e.target.value)}
+              className="w-full bg-[#1A1A1A] border border-[#333333] rounded-lg p-3 text-[#E5E5E5]"
+              placeholder="Ask Astra (e.g., 'What are key trends?')"
+            />
+            <button onClick={chatWithAstra} className="btn-primary">Send</button>
+            {chatResponse && <p className="text-sm text-[#A0A0A0]">{chatResponse}</p>}
+          </div>
+        </motion.div>
+        <motion.div className="card">
+          <h3 className="text-2xl font-orbitron gradient-text mb-4">Gemini Report Preview</h3>
+          <div className="space-y-4">
+            <textarea
+              value={reportPreview}
+              onChange={(e) => setReportPreview(e.target.value)}
+              disabled={!editMode}
+              className="w-full h-40 bg-[#1A1A1A] border border-[#333333] rounded-lg p-3 text-[#E5E5E5] resize-none"
+            />
+            <div className="flex space-x-4">
+              <button onClick={() => setEditMode(!editMode)} className="btn-primary flex items-center">
+                <LucideEdit className="mr-2" size={18} /> {editMode ? 'Save' : 'Edit'}
+              </button>
+              <button onClick={generateReport} className="btn-primary flex items-center">
+                <LucideDownload className="mr-2" size={18} /> Download
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default CommandCenter;
+
+// Action 8: Initialize project and run.
+// mkdir public
+// cp -r FB\ Pipeline/monthly_summaries public/
+// node server.js & npm run dev
+
+// Action 9: Validate and test.
+// After applying changes, run the project in Replit:
+// - Ensure server.js and Vite are running (use Replit's multi-run or "start" script).
+// - Access at https://your-username.astrad.repl.co.
+// - Verify login (admin/password123), multi-month chart, report preview/edit, and data validation (e.g., remove a CSV to test 404).
+// - Check F12 → Console for errors and resolve (e.g., adjust proxy or file paths).
+// Proceed with refinements once the user approves with "I approve."

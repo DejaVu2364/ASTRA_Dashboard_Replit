@@ -1,7 +1,30 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+// WebSocket removed to prevent conflicts with Vite
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { storage } from "./storage";
 import { insertUserSchema, insertPostSchema, insertCommentSchema, insertAnalyticsSchema, insertChallengeSchema, insertUserChallengeSchema, insertNarrativeReportSchema, insertGeminiReportSchema } from "@shared/schema";
+
+const JWT_SECRET = process.env.JWT_SECRET || "astra-intelligence-secret-key";
+
+// Authentication middleware
+const authenticateToken = (req: any, res: any, next: any) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid or expired token' });
+    }
+    req.user = user;
+    next();
+  });
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check
@@ -9,8 +32,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "ASTRA Intelligence Server is running", status: "operational" });
   });
 
-  // User routes
-  app.get("/api/users/:id", async (req, res) => {
+  // Authentication routes
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      // For demo purposes, use hardcoded admin credentials
+      // In production, this should query the database
+      const validUsername = "admin";
+      const validPasswordHash = await bcrypt.hash("password123", 10);
+      
+      if (username === validUsername && await bcrypt.compare(password, validPasswordHash)) {
+        const token = jwt.sign(
+          { username, role: 'admin' },
+          JWT_SECRET,
+          { expiresIn: '24h' }
+        );
+        res.json({ token, user: { username, role: 'admin' } });
+      } else {
+        res.status(401).json({ error: 'Invalid credentials' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'Login failed' });
+    }
+  });
+
+  app.post("/api/logout", (req, res) => {
+    res.json({ message: 'Logged out successfully' });
+  });
+
+  // User routes (protected)
+  app.get("/api/users/:id", authenticateToken, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const user = await storage.getUser(id);
@@ -34,8 +86,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Post routes
-  app.get("/api/posts", async (req, res) => {
+  // Post routes (protected)
+  app.get("/api/posts", authenticateToken, async (req, res) => {
     try {
       const posts = await storage.getAllPosts();
       res.json(posts);
@@ -68,8 +120,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Analytics routes
-  app.get("/api/analytics", async (req, res) => {
+  // Analytics routes (protected)
+  app.get("/api/analytics", authenticateToken, async (req, res) => {
     try {
       const metricType = req.query.type as string;
       const analytics = await storage.getAnalytics(metricType);
@@ -109,8 +161,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Narrative report routes
-  app.get("/api/narrative-reports", async (req, res) => {
+  // Narrative report routes (protected)
+  app.get("/api/narrative-reports", authenticateToken, async (req, res) => {
     try {
       const reports = await storage.getAllNarrativeReports();
       res.json(reports);
@@ -144,8 +196,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Gemini report routes
-  app.get("/api/gemini-reports", async (req, res) => {
+  // Gemini report routes (protected)
+  app.get("/api/gemini-reports", authenticateToken, async (req, res) => {
     try {
       const reports = await storage.getAllGeminiReports();
       res.json(reports);

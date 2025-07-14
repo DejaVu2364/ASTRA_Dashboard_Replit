@@ -9,8 +9,10 @@ import {
   Database,
   MessageSquare,
   Target,
-  Radar
+  Radar,
+  LogOut
 } from "lucide-react";
+import { useAuth } from '../contexts/AuthContext';
 
 interface SidebarProps {
   activeRoute: string;
@@ -18,6 +20,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeRoute, onNavigate }: SidebarProps) {
+  const { user, logout } = useAuth();
+  
   const navItems = [
     { id: 'command-center', label: 'Command Center', icon: Command },
     { id: 'data-explorer', label: 'Data Explorer', icon: Database },
@@ -71,7 +75,7 @@ export default function Sidebar({ activeRoute, onNavigate }: SidebarProps) {
         })}
       </nav>
       
-      <div className="p-4 border-t border-obsidian-border">
+      <div className="p-4 border-t border-obsidian-border space-y-3">
         <motion.div 
           className="flex items-center space-x-2 px-4 py-3 rounded-lg bg-verified-green/20 border border-verified-green/30"
           animate={{ scale: [1, 1.02, 1] }}
@@ -91,7 +95,26 @@ export default function Sidebar({ activeRoute, onNavigate }: SidebarProps) {
           <Shield className="w-4 h-4 text-verified-green" />
           <span className="text-verified-green font-medium">Verified Data</span>
         </motion.div>
-        <p className="text-xs text-gray-500 mt-2 px-4">All systems operational</p>
+        
+        <motion.div
+          className="flex items-center justify-between px-4 py-2 text-xs text-gray-400"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <span>Agent: {user?.username || 'admin'}</span>
+          <motion.button
+            onClick={logout}
+            className="flex items-center space-x-1 text-red-400 hover:text-red-300 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <LogOut className="w-3 h-3" />
+            <span>Logout</span>
+          </motion.button>
+        </motion.div>
+        
+        <p className="text-xs text-gray-500 px-4">All systems operational</p>
       </div>
     </motion.div>
   );
