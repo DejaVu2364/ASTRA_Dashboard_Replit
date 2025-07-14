@@ -74,6 +74,9 @@ export default function PostTable() {
     visible: { opacity: 1, x: 0 }
   };
 
+  // Show only first 10 posts for better performance
+  const displayPosts = posts.slice(0, 10);
+
   return (
     <motion.div 
       className="glass-morphism p-6 rounded-xl"
@@ -83,21 +86,10 @@ export default function PostTable() {
     >
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-heading font-bold text-white">
-          Post Intelligence Analysis
+          Political Intelligence Analysis
         </h3>
-        <div className="flex items-center space-x-4">
-          <select className="bg-obsidian-surface border border-obsidian-border rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-electric-blue">
-            <option>All Topics</option>
-            <option>Economy</option>
-            <option>Environment</option>
-            <option>Praise</option>
-          </select>
-          <Button 
-            variant="outline"
-            className="bg-electric-blue/20 border-electric-blue/30 text-electric-blue hover:bg-electric-blue/30"
-          >
-            Export Data
-          </Button>
+        <div className="text-sm text-gray-400">
+          Showing {displayPosts.length} of {posts.length} posts
         </div>
       </div>
       
@@ -118,7 +110,7 @@ export default function PostTable() {
             initial="hidden"
             animate="visible"
           >
-            {posts.map((post, index) => (
+            {displayPosts.map((post, index) => (
               <motion.tr
                 key={`post-${index}`}
                 variants={rowVariants}
@@ -136,7 +128,7 @@ export default function PostTable() {
                     {(post.totalLikes + post.numShares + post.commentCount).toLocaleString()}
                   </div>
                   <div className="text-xs text-gray-400">
-                    ↑ {(parseFloat(post.weightedEngagementRate) * 100).toFixed(1)}% rate
+                    ↑ {post.weightedEngagementRate ? parseFloat(post.weightedEngagementRate).toFixed(1) : '0.0'}% rate
                   </div>
                 </td>
                 <td className="py-4 px-4">
