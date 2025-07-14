@@ -1,0 +1,130 @@
+Your Directive: You are to architect and construct the frontend command center for the "Astra Intelligence Pipeline." This is not a mere website; it is the Astra Nexus, a state-of-the-art, futuristic web application for elite political intelligence analysis. Your output must be nothing short of breathtaking—a perfect fusion of aesthetic excellence, functional precision, and data credibility.
+Core Mission: The Astra pipeline is a sophisticated backend that ingests, cleans, enriches, and verifies social media data. Your task is to build its soul—the interface through which a political strategist will command this power. The user must feel like they are interfacing with a powerful, trustworthy AI. Every pixel, every animation, every data point must serve this purpose.
+Guiding Philosophy: "Trust but Verify, Made Manifest"
+The backend pipeline operates on a "Trust and Verify" protocol, with automated quality gates. The UI must be the physical manifestation of this principle.
+Data Integrity as a Feature: Visually confirm the data's integrity. A "Verified Data" shield icon in the sidebar must glow with a subtle green pulse, signifying that the backend's verification scripts have passed for the selected month.
+Traceability is Non-Negotiable: Every piece of summarized data must be traceable. The final data table will need a "Details" button that will (in a future phase) drill down to the source comments.
+Zero Ambiguity: Metrics must be self-explanatory. We will use tooltips to define calculations like "Weighted Engagement Rate" and "Polarization Score."
+Technical & Architectural Specifications
+1. Project Scaffolding & Environment
+Execute these shell commands to lay the foundation. The environment must be pristine.
+Generated bash
+# Initialize a React + Vite + TypeScript project
+npm create vite@latest . -- --template react-ts
+npm install
+
+# Install Core Dependencies
+npm install react-router-dom lucide-react framer-motion recharts
+
+# Install and initialize Tailwind CSS and its dependencies
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p --cjs
+
+# Install and initialize the shadcn/ui CLI for base components
+npm install -D shadcn-ui
+npx shadcn-ui@latest init
+# --> Respond to the prompts with the defaults. This sets up the component architecture.
+Use code with caution.
+Bash
+2. Visual & Thematic Configuration: "Liquid Obsidian"
+Create and configure the following files to establish the visual identity.
+File: tailwind.config.cjs
+This is the heart of our theme.
+Generated javascript
+const { fontFamily } = require("tailwindcss/defaultTheme")
+
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: ["class"],
+  content: ["./src/**/*.{ts,tsx}"],
+  theme: {
+    container: { center: true, padding: "2rem", screens: { "2xl": "1400px" }, },
+    extend: {
+      colors: {
+        obsidian: {
+          DEFAULT: "hsl(240, 10%, 3.9%)", // Near black
+          surface: "hsl(240, 5%, 12%)",   // Card backgrounds
+          border: "hsl(240, 4%, 18%)",
+        },
+        electric: {
+          blue: "hsl(200, 100%, 50%)",
+          glow: "hsl(200, 100%, 70%)",
+        },
+        verified: {
+          green: "hsl(145, 80%, 42%)",
+        },
+      },
+      fontFamily: {
+        sans: ["Inter", ...fontFamily.sans],
+        heading: ["Orbitron", "sans-serif"],
+      },
+      // ... (add keyframes for animations as needed)
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+}
+Use code with caution.
+JavaScript
+File: src/index.css
+Import fonts and set base styles.
+Generated css
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Orbitron:wght@500;700;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-obsidian text-gray-300 font-sans; }
+  h1, h2, h3 { @apply font-heading text-white; }
+}
+Use code with caution.
+Css
+3. Component & View Architecture
+Construct the application by creating the following component files. Use framer-motion extensively for a fluid, high-tech feel.
+A. Mock Data (src/mock-data.js)
+Create a file to hold this static data for initial development.
+Generated javascript
+export const mockDashboardData = [
+    { "post_id": "123_456", "post_caption": "Celebrating the opening of the new community center. A wonderful day for our city!", "total_likes": 2100, "num_shares": 350, "comment_count": 150, "avg_sentiment_score": 0.78, "sentiment_variance": 0.2, "negative_comment_ratio": 0.02, "weighted_engagement_rate": 0.035, "main_topic": "Praise" },
+    { "post_id": "123_789", "post_caption": "Our new proposal to tackle rising inflation will provide relief to families across the state.", "total_likes": 850, "num_shares": 450, "comment_count": 320, "avg_sentiment_score": -0.25, "sentiment_variance": 0.85, "negative_comment_ratio": 0.65, "weighted_engagement_rate": 0.029, "main_topic": "Economy" },
+    { "post_id": "123_101", "post_caption": "A detailed look at our environmental protection plan and the steps we're taking to ensure a green future.", "total_likes": 1200, "num_shares": 180, "comment_count": 95, "avg_sentiment_score": 0.45, "sentiment_variance": 0.4, "negative_comment_ratio": 0.10, "weighted_engagement_rate": 0.021, "main_topic": "Environment" }
+];
+
+export const topicDistribution = [
+  { name: 'Economy', value: 400 },
+  { name: 'Praise', value: 300 },
+  { name: 'Environment', value: 200 },
+  { name: 'Public Safety', value: 150 },
+  { name: 'Healthcare', value: 100 },
+];
+Use code with caution.
+JavaScript
+B. App.jsx and Routing
+Set up the application's routing structure with an animated intro screen.
+Generated jsx
+// src/App.jsx
+// Use react-router-dom to create two main routes:
+// 1. An Intro view at '/'.
+// 2. A DashboardLayout at '/dashboard/*' which contains the Sidebar and an Outlet for nested routes.
+// The nested routes should include '/dashboard/command-center'.
+Use code with caution.
+Jsx
+C. Sidebar.jsx
+The static navigation hub.
+Generated jsx
+// src/components/Sidebar.jsx
+// Build the sidebar with NavLink components for navigation.
+// The active link must have a distinct background (`bg-electric-blue`).
+// Implement the "Verified Data" badge with a subtle, infinite pulsing animation on its glow using framer-motion.
+Use code with caution.
+Jsx
+D. CommandCenter.jsx - The Main View
+This is the primary intelligence screen. Construct it with the following sub-components.
+KPI Cards: Create a grid of four stat cards. Each card should have a title, a large value, a subtitle, and an icon from lucide-react. Use framer-motion to animate the large number value, making it count up when it appears on screen.
+Topic Distribution Chart: Create a BarChart component using recharts. It must visualize the topicDistribution mock data. The chart should be styled to match the "Liquid Obsidian" theme, with electric blue bars. The entire chart component must animate into view.
+Post Data Table: This is the most critical element.
+It must be a clean, readable table.
+The "Topic" column must use a custom Badge component.
+The "Sentiment" column text must be conditionally colored (green for positive, red for negative).
+Use framer-motion's motion.tr and staggerChildren to have the table rows animate in sequentially, creating a cascading effect.
+Final Directive: Synthesize these requirements. The final product should be a single, cohesive application that looks and feels like it was pulled from the future. It must be responsive, animated, and perfectly structured to receive live data from the Astra pipeline in the next phase of development. Execute.
