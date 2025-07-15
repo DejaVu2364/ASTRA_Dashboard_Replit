@@ -333,18 +333,18 @@ export default function ExecutiveCockpit() {
             <span className="w-2 h-2 bg-electric-blue rounded-full mr-3 animate-pulse"></span>
             AI Campaign Health Overview
           </h3>
-          <Badge variant="outline" className="border-electric-blue/30 text-electric-blue">
+          <Badge variant="outline" className="border-electric-blue/30 text-electric-blue bg-electric-blue/10">
             Live
           </Badge>
         </div>
         
         <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50 mb-4">
-          <div className="font-mono text-sm text-gray-300 leading-relaxed">
+          <div className="text-sm text-gray-300 leading-relaxed">
             {aiOverview.split('**').map((part, index) => 
               index % 2 === 1 ? (
-                <span key={index} className="text-electric-blue font-bold">{part}</span>
+                <span key={index} className="text-white font-bold">{part}</span>
               ) : (
-                <span key={index}>{part}</span>
+                <span key={index} className="text-gray-300">{part}</span>
               )
             )}
           </div>
