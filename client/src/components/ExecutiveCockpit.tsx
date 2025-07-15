@@ -12,18 +12,16 @@ export default function ExecutiveCockpit() {
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
 
   const { data: posts, isLoading: postsLoading, error: postsError } = useQuery<Post[]>({
-    queryKey: ['/api/posts', refreshKey],
+    queryKey: ['/api/posts'],
     staleTime: 10 * 60 * 1000, // 10 minutes cache
   });
 
   const { data: analytics, isLoading: analyticsLoading, error: analyticsError } = useQuery<Analytics[]>({
-    queryKey: ['/api/analytics', refreshKey],
+    queryKey: ['/api/analytics'],
     staleTime: 10 * 60 * 1000, // 10 minutes cache
   });
 
-  // Debug logging
-  console.log('Posts data:', posts?.length, 'Loading:', postsLoading, 'Error:', postsError);
-  console.log('Analytics data:', analytics?.length, 'Loading:', analyticsLoading, 'Error:', analyticsError);
+
 
   // Calculate 6-month reach trend data
   const reachTrendData = useMemo(() => {
@@ -267,7 +265,7 @@ export default function ExecutiveCockpit() {
           <h2 className="text-3xl font-heading font-bold text-white mb-2">
             Executive Performance Snapshot
           </h2>
-          <p className="text-gray-400">Loading analytics...</p>
+          <p className="text-gray-400">Loading campaign intelligence...</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
@@ -288,7 +286,7 @@ export default function ExecutiveCockpit() {
           <h2 className="text-3xl font-heading font-bold text-white mb-2">
             Executive Performance Snapshot
           </h2>
-          <p className="text-gray-400">No data available</p>
+          <p className="text-gray-400">No data available - Loading campaign intelligence...</p>
         </div>
       </div>
     );
@@ -315,7 +313,13 @@ export default function ExecutiveCockpit() {
             
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => setRefreshKey(prev => prev + 1)}
+                onClick={() => {
+                  // Force refetch by invalidating queries
+                  import('@/lib/queryClient').then(({ queryClient }) => {
+                    queryClient.invalidateQueries({ queryKey: ['/api/posts'] });
+                    queryClient.invalidateQueries({ queryKey: ['/api/analytics'] });
+                  });
+                }}
                 className="p-2 rounded-lg bg-electric-blue/10 hover:bg-electric-blue/20 transition-colors"
                 title="Refresh data"
               >
