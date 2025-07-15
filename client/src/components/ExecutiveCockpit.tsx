@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import { TrendingUp, TrendingDown, Award, AlertTriangle } from "lucide-react";
+import { TrendingUp, TrendingDown, Award, AlertTriangle, Zap, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Post, Analytics } from "@shared/schema";
 import { useMemo, useState } from "react";
