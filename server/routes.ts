@@ -230,6 +230,8 @@ const authenticateToken = (req: any, res: any, next: any) => {
   });
 };
 
+let streamingServer: StreamingServer | null = null;
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check
   app.get("/api/health", (req, res) => {
