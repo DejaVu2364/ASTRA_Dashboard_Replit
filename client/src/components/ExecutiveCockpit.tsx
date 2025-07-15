@@ -260,10 +260,10 @@ export default function ExecutiveCockpit() {
     return (
       <div className="space-y-8">
         <div className="command-header p-6 rounded-xl">
-          <h2 className="text-3xl font-heading font-bold text-white mb-2">
+          <h2 className="text-3xl text-white mb-2 heading-main">
             Executive Performance Snapshot
           </h2>
-          <p className="text-gray-400">Loading campaign intelligence...</p>
+          <p className="text-gray-400 text-professional">Loading campaign intelligence...</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(4)].map((_, i) => (
@@ -281,10 +281,10 @@ export default function ExecutiveCockpit() {
     return (
       <div className="space-y-8">
         <div className="command-header p-6 rounded-xl">
-          <h2 className="text-3xl font-heading font-bold text-white mb-2">
+          <h2 className="text-3xl text-white mb-2 heading-main">
             Executive Performance Snapshot
           </h2>
-          <p className="text-gray-400">No data available - Loading campaign intelligence...</p>
+          <p className="text-gray-400 text-professional">No data available - Loading campaign intelligence...</p>
         </div>
       </div>
     );
@@ -295,10 +295,10 @@ export default function ExecutiveCockpit() {
       <div className="command-header p-6 rounded-xl">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-heading font-bold text-white mb-2">
+            <h2 className="text-3xl text-white mb-2 heading-main">
               Executive Performance Snapshot
             </h2>
-            <p className="text-gray-400">
+            <p className="text-gray-400 text-professional">
               AI-powered intelligence overview with strategic insights
             </p>
           </div>
@@ -329,10 +329,10 @@ export default function ExecutiveCockpit() {
                 <AlertTriangle className="w-4 h-4 text-electric-blue" />
               </div>
               <div>
-                <h3 className="text-xl font-heading font-bold text-white">
+                <h3 className="text-xl text-white heading-secondary">
                   AI Campaign Health
                 </h3>
-                <p className="text-xs text-gray-400">Real-time intelligence</p>
+                <p className="text-xs text-gray-400 text-professional">Real-time intelligence</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -521,7 +521,7 @@ export default function ExecutiveCockpit() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sentiment Distribution */}
         <div className="glass-morphism p-6 rounded-xl">
-          <h3 className="text-xl font-heading font-bold text-white mb-4">
+          <h3 className="text-xl text-white mb-4 heading-secondary">
             Sentiment Distribution
           </h3>
           <div className="h-64 relative">
@@ -587,7 +587,7 @@ export default function ExecutiveCockpit() {
 
         {/* 6-Month Reach Trend */}
         <div className="glass-morphism p-6 rounded-xl">
-          <h3 className="text-xl font-heading font-bold text-white mb-4">
+          <h3 className="text-xl text-white mb-4 heading-secondary">
             6-Month Reach Trend
           </h3>
           <div className="h-48">
@@ -646,7 +646,7 @@ export default function ExecutiveCockpit() {
           transition={{ duration: 0.6 }}
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-heading font-bold text-white">
+            <h3 className="text-xl text-white heading-secondary">
               Performance Insights
             </h3>
             {/* Information hierarchy indicator */}
@@ -665,7 +665,7 @@ export default function ExecutiveCockpit() {
               whileHover={{ y: -2 }}
             >
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-white">Content Analysis</h4>
+                <h4 className="text-sm text-white heading-secondary">Content Analysis</h4>
                 <TrendingUp className="w-4 h-4 text-electric-blue" />
               </div>
               <div className="space-y-3">
@@ -695,7 +695,7 @@ export default function ExecutiveCockpit() {
               whileHover={{ y: -2 }}
             >
               <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-white">Audience Insights</h4>
+                <h4 className="text-sm text-white heading-secondary">Audience Insights</h4>
                 <Award className="w-4 h-4 text-verified-green" />
               </div>
               <div className="space-y-3">
