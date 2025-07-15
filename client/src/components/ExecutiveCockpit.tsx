@@ -364,7 +364,7 @@ export default function ExecutiveCockpit() {
                   <Zap className="w-3 h-3 text-electric-blue" />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-white mb-1">
+              <div className="text-2xl font-bold text-white mb-1 data-text">
                 {(metrics.avgSentiment * 100).toFixed(1)}%
               </div>
               <div className="text-xs text-gray-400">Sentiment score</div>
@@ -427,7 +427,7 @@ export default function ExecutiveCockpit() {
                 <span className="text-xs text-gray-400 uppercase tracking-wide">Engagement</span>
                 <TrendingUp className="w-3 h-3 text-electric-blue" />
               </div>
-              <div className="text-2xl font-bold text-white mb-1">
+              <div className="text-2xl font-bold text-white mb-1 data-text">
                 {(metrics.avgEngagement * 100).toFixed(2)}%
               </div>
               <div className="text-xs text-gray-400">Interaction rate</div>
@@ -453,7 +453,7 @@ export default function ExecutiveCockpit() {
                 <span className="text-xs text-gray-400 uppercase tracking-wide">Reach</span>
                 <Award className="w-3 h-3 text-verified-green" />
               </div>
-              <div className="text-2xl font-bold text-white mb-1">
+              <div className="text-2xl font-bold text-white mb-1 data-text">
                 {((metrics.totalComments * 35 + metrics.totalPosts * 850) / 1000000).toFixed(2)}M
               </div>
               <div className="text-xs text-gray-400">Est. impressions</div>
@@ -489,13 +489,13 @@ export default function ExecutiveCockpit() {
                 
                 {/* Quick action buttons for reduced decision fatigue */}
                 <div className="flex items-center space-x-2 mt-3">
-                  <button className="text-xs text-electric-blue hover:text-white transition-colors bg-electric-blue/10 px-2 py-1 rounded">
+                  <button className="text-xs text-electric-blue hover:text-white transition-colors bg-electric-blue/10 px-2 py-1 rounded btn">
                     Deep Dive
                   </button>
-                  <button className="text-xs text-gray-400 hover:text-white transition-colors">
+                  <button className="text-xs text-gray-400 hover:text-white transition-colors btn">
                     Share Report
                   </button>
-                  <button className="text-xs text-gray-400 hover:text-white transition-colors">
+                  <button className="text-xs text-gray-400 hover:text-white transition-colors btn">
                     Set Alert
                   </button>
                 </div>
@@ -509,7 +509,7 @@ export default function ExecutiveCockpit() {
               <div className="w-1 h-1 bg-electric-blue rounded-full animate-pulse"></div>
               <span>Updated {new Date().toLocaleTimeString()}</span>
             </div>
-            <button className="text-xs text-electric-blue hover:text-white transition-colors flex items-center space-x-1">
+            <button className="text-xs text-electric-blue hover:text-white transition-colors flex items-center space-x-1 btn">
               <span>Explore insights</span>
               <span>→</span>
             </button>

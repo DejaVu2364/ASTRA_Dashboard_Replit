@@ -1,0 +1,70 @@
+Set up the Astra Intelligence Dashboard to use the following fonts for a professional, minimalistic, and futuristic design:
+
+Primary Header Font: Orbitron (weights 400, 700) for all major headings (H1, H2).
+Primary Body Font: Roboto Mono (weights 400, 500) for body text, labels, and data displays.
+Secondary Accent Font: Source Sans Pro (weights 400, 600) for secondary text, buttons, and interactive prompts.
+Implementation Steps:
+
+Add the Google Fonts import to src/index.css at the top of the file:
+css
+
+Collapse
+
+Wrap
+
+Copy
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;500&family=Source+Sans+Pro:wght@400;600&display=swap');
+Define global font styles in src/index.css to apply these fonts consistently:
+css
+
+Collapse
+
+Wrap
+
+Copy
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #000000;
+  color: #FFFFFF;
+  font-family: 'Roboto Mono', monospace;
+  overflow-x: hidden;
+}
+
+h1, h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+}
+
+h3, h4, h5 {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 400;
+}
+
+p, span, label, input, select, button {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 400;
+}
+
+.data-text {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
+}
+
+.btn {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 600;
+}
+Apply the .data-text class to elements displaying metrics (e.g., sentiment scores, engagement rates) in components like ExecutiveOverview.jsx or Dashboard.jsx.
+Ensure all existing CSS files (e.g., component-specific styles) inherit these font families unless overridden for specific use cases.
+Verify the fonts load correctly by running npm run dev and inspecting the rendered page in the Replit preview. Adjust font sizes (e.g., font-size: 16px for body, font-size: 24px for headings) as needed for readability.
+Notes:
+
+The black-and-white theme (#000000 background, #FFFFFF text, #E0E0E0 accents) should complement these fonts.
+Test responsiveness across desktop and mobile views to ensure legibility.
+If font loading fails, check your internet connection or use a local fallback (e.g., system fonts like Arial) as a temporary measure.
+Proceed with these steps to integrate the fonts seamlessly into the dashboard. Let me know if adjustments are needed after testing!

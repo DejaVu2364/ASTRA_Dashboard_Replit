@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;500&family=Source+Sans+Pro:wght@400;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -42,16 +44,45 @@
 @layer base {
   * {
     @apply border-border;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
 
   body {
-    @apply font-sans antialiased bg-obsidian text-foreground;
-    font-family: 'Inter', sans-serif;
+    @apply antialiased bg-obsidian text-foreground;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 16px;
+    background-color: #000000;
+    color: #FFFFFF;
+    overflow-x: hidden;
   }
   
-  h1, h2, h3, h4, h5, h6 {
+  h1, h2 {
     font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
     @apply text-white;
+  }
+  
+  h3, h4, h5, h6 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 400;
+    @apply text-white;
+  }
+  
+  p, span, label, input, select, button {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 400;
+  }
+  
+  .data-text {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 500;
+  }
+  
+  .btn {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 600;
   }
 }
 
