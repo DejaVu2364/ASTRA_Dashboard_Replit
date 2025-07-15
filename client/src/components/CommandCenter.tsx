@@ -132,30 +132,22 @@ export default function CommandCenter() {
     <div className="min-h-screen p-8 space-y-8">
       {/* Header */}
       <motion.div
-        className="command-header p-6 rounded-xl"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        className="mb-12"
       >
-        <h1 className="text-4xl text-white mb-3 tracking-wider" style={{ 
-          fontFamily: 'Anton, sans-serif', 
-          letterSpacing: '0.15em',
-          textShadow: '0 2px 4px rgba(0, 163, 255, 0.3)',
-          background: 'linear-gradient(135deg, #FFFFFF 0%, #00A3FF 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
-        }}>
-          ASTRA INTELLIGENCE COMMAND CENTER
+        <h1 className="text-3xl font-semibold text-white mb-3 heading-secondary">
+          Astra Intelligence
         </h1>
-        <p className="text-gray-400 text-sm tracking-wide" style={{ fontFamily: 'Source Sans Pro, sans-serif', fontWeight: 400 }}>
-          Comprehensive political intelligence platform with AI-powered analytics
+        <p className="text-gray-500 text-professional">
+          Political intelligence platform with AI-powered analytics
         </p>
       </motion.div>
 
       {/* Navigation Tabs - MVP Blocks Style */}
       <motion.div
-        className="mvp-card p-6"
+        className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
@@ -167,10 +159,10 @@ export default function CommandCenter() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`mvp-button flex items-center space-x-3 px-6 py-3 rounded-xl transition-all duration-200 whitespace-nowrap ${
+                className={`flex items-center space-x-3 px-6 py-3 rounded-xl transition-all duration-200 whitespace-nowrap border ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-blue-500/20 to-blue-600/20 border-blue-500/40 text-white shadow-lg transform scale-105'
-                    : 'text-gray-300 hover:text-white hover:scale-102'
+                    ? 'bg-white text-black border-white'
+                    : 'text-gray-300 hover:text-white border-gray-800 hover:border-gray-700'
                 }`}
               >
                 <Icon className="w-5 h-5" />
