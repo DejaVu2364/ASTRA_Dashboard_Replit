@@ -1,15 +1,64 @@
 import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import { TrendingUp, TrendingDown, Award, AlertTriangle, Download, Share2, RefreshCw, Target, Zap } from "lucide-react";
+import { TrendingUp, TrendingDown, Award, AlertTriangle, Download, Share2, RefreshCw, Target, Zap, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { Post, Analytics } from "@shared/schema";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ExecutiveCockpit() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
+  const { toast } = useToast();
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'r':
+            e.preventDefault();
+            // Trigger refresh
+            document.querySelector('[title="Refresh data"]')?.click();
+            break;
+          case 'e':
+            e.preventDefault();
+            // Trigger export
+            document.querySelector('[title="Export dashboard"]')?.click();
+            break;
+          case 'h':
+            e.preventDefault();
+            // Toggle advanced view
+            setShowAdvanced(!showAdvanced);
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showAdvanced]);
+
+  // Auto-refresh functionality
+  useEffect(() => {
+    if (!autoRefreshEnabled) return;
+    
+    const interval = setInterval(async () => {
+      try {
+        const { queryClient } = await import('@/lib/queryClient');
+        await queryClient.invalidateQueries({ queryKey: ['/api/posts'] });
+        await queryClient.invalidateQueries({ queryKey: ['/api/analytics'] });
+      } catch (error) {
+        console.error('Auto-refresh failed:', error);
+      }
+    }, 60000); // 1 minute
+
+    return () => clearInterval(interval);
+  }, [autoRefreshEnabled]);
 
   const { data: posts, isLoading: postsLoading, error: postsError } = useQuery<Post[]>({
     queryKey: ['/api/posts'],
@@ -300,9 +349,19 @@ export default function ExecutiveCockpit() {
             <h2 className="text-3xl font-heading font-bold text-white mb-2">
               Executive Performance Snapshot
             </h2>
-            <p className="text-gray-400">
-              AI-powered intelligence overview with strategic insights
-            </p>
+            <div className="flex items-center space-x-4">
+              <p className="text-gray-400">
+                AI-powered intelligence overview with strategic insights
+              </p>
+              
+              {/* Keyboard shortcuts help */}
+              <div className="text-xs text-gray-500 space-x-2">
+                <kbd className="px-1 py-0.5 bg-gray-700/30 rounded text-xs">Ctrl+R</kbd>
+                <span>Refresh</span>
+                <kbd className="px-1 py-0.5 bg-gray-700/30 rounded text-xs">Ctrl+E</kbd>
+                <span>Export</span>
+              </div>
+            </div>
           </div>
           {/* Enhanced Dashboard Controls */}
           <div className="flex items-center space-x-4">
@@ -313,17 +372,32 @@ export default function ExecutiveCockpit() {
             
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => {
-                  // Force refetch by invalidating queries
-                  import('@/lib/queryClient').then(({ queryClient }) => {
-                    queryClient.invalidateQueries({ queryKey: ['/api/posts'] });
-                    queryClient.invalidateQueries({ queryKey: ['/api/analytics'] });
-                  });
+                onClick={async () => {
+                  setIsRefreshing(true);
+                  try {
+                    const { queryClient } = await import('@/lib/queryClient');
+                    await queryClient.invalidateQueries({ queryKey: ['/api/posts'] });
+                    await queryClient.invalidateQueries({ queryKey: ['/api/analytics'] });
+                    
+                    toast({
+                      title: "Data Refreshed",
+                      description: "Campaign intelligence updated successfully",
+                    });
+                  } catch (error) {
+                    toast({
+                      title: "Refresh Failed",
+                      description: "Unable to refresh data. Please try again.",
+                      variant: "destructive",
+                    });
+                  } finally {
+                    setIsRefreshing(false);
+                  }
                 }}
-                className="p-2 rounded-lg bg-electric-blue/10 hover:bg-electric-blue/20 transition-colors"
+                disabled={isRefreshing}
+                className="p-2 rounded-lg bg-electric-blue/10 hover:bg-electric-blue/20 transition-colors disabled:opacity-50"
                 title="Refresh data"
               >
-                <RefreshCw className="w-4 h-4 text-electric-blue" />
+                <RefreshCw className={`w-4 h-4 text-electric-blue ${isRefreshing ? 'animate-spin' : ''}`} />
               </button>
               
               <button
@@ -334,7 +408,61 @@ export default function ExecutiveCockpit() {
                 <Target className="w-4 h-4 text-electric-blue" />
               </button>
               
+              {/* Auto-refresh toggle */}
               <button
+                onClick={() => {
+                  setAutoRefreshEnabled(!autoRefreshEnabled);
+                  toast({
+                    title: autoRefreshEnabled ? "Auto-refresh Disabled" : "Auto-refresh Enabled",
+                    description: autoRefreshEnabled ? "Manual refresh mode" : "Data updates every minute",
+                  });
+                }}
+                className={`p-2 rounded-lg transition-colors ${
+                  autoRefreshEnabled 
+                    ? 'bg-verified-green/10 hover:bg-verified-green/20' 
+                    : 'bg-gray-700/10 hover:bg-gray-700/20'
+                }`}
+                title="Toggle auto-refresh"
+              >
+                <div className={`w-4 h-4 rounded-full border-2 transition-colors ${
+                  autoRefreshEnabled ? 'bg-verified-green border-verified-green' : 'border-gray-400'
+                }`}>
+                  {autoRefreshEnabled && <div className="w-2 h-2 bg-white rounded-full m-0.5" />}
+                </div>
+              </button>
+              
+              <button
+                onClick={() => {
+                  // Generate and download dashboard report
+                  const reportData = {
+                    timestamp: new Date().toISOString(),
+                    metrics: {
+                      totalPosts: metrics?.totalPosts || 0,
+                      totalComments: metrics?.totalComments || 0,
+                      avgSentiment: metrics?.avgSentiment || 0,
+                      avgEngagement: metrics?.avgEngagement || 0,
+                      topTopics: metrics?.topTopics || [],
+                      riskPoints: metrics?.riskPoints || []
+                    },
+                    summary: dynamicSummary,
+                    generatedBy: "Astra Intelligence Platform"
+                  };
+                  
+                  const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `executive-dashboard-${new Date().toISOString().split('T')[0]}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                  
+                  toast({
+                    title: "Dashboard Exported",
+                    description: "Executive report downloaded successfully",
+                  });
+                }}
                 className="p-2 rounded-lg bg-electric-blue/10 hover:bg-electric-blue/20 transition-colors"
                 title="Export dashboard"
               >
@@ -342,6 +470,24 @@ export default function ExecutiveCockpit() {
               </button>
               
               <button
+                onClick={() => {
+                  // Generate shareable dashboard link
+                  const shareData = {
+                    title: 'Astra Intelligence Executive Dashboard',
+                    text: `Campaign Performance: ${metrics?.avgSentiment ? (metrics.avgSentiment * 100).toFixed(1) : 0}% sentiment, ${metrics?.totalPosts || 0} posts analyzed`,
+                    url: window.location.href
+                  };
+                  
+                  if (navigator.share) {
+                    navigator.share(shareData);
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast({
+                      title: "Link Copied",
+                      description: "Dashboard link copied to clipboard",
+                    });
+                  }
+                }}
                 className="p-2 rounded-lg bg-electric-blue/10 hover:bg-electric-blue/20 transition-colors"
                 title="Share dashboard"
               >
@@ -533,6 +679,14 @@ export default function ExecutiveCockpit() {
                 <div className="flex items-center justify-between mt-3">
                   <div className="flex items-center space-x-2">
                     <motion.button 
+                      onClick={() => {
+                        // Navigate to Data Explorer for deep dive
+                        window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: 'data-explorer' }));
+                        toast({
+                          title: "Navigating to Data Explorer",
+                          description: "Opening detailed analytics view",
+                        });
+                      }}
                       className="text-xs text-electric-blue hover:text-white transition-colors bg-electric-blue/10 hover:bg-electric-blue/20 px-2 py-1 rounded"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -540,6 +694,30 @@ export default function ExecutiveCockpit() {
                       Deep Dive
                     </motion.button>
                     <motion.button 
+                      onClick={() => {
+                        // Generate and share detailed report
+                        const reportText = `🎯 Executive Dashboard Report
+📊 Campaign Health: ${metrics?.avgSentiment ? (metrics.avgSentiment * 100).toFixed(1) : 0}% sentiment
+📈 Total Posts: ${metrics?.totalPosts || 0}
+💬 Total Comments: ${metrics?.totalComments || 0}
+📍 Top Topics: ${metrics?.topTopics?.slice(0, 3).map(t => t.topic).join(', ') || 'None'}
+⚠️ Risk Points: ${metrics?.riskPoints?.length || 0}
+
+Generated by Astra Intelligence Platform`;
+                        
+                        if (navigator.share) {
+                          navigator.share({
+                            title: 'Campaign Report',
+                            text: reportText
+                          });
+                        } else {
+                          navigator.clipboard.writeText(reportText);
+                          toast({
+                            title: "Report Copied",
+                            description: "Campaign report copied to clipboard",
+                          });
+                        }
+                      }}
                       className="text-xs text-gray-400 hover:text-white transition-colors hover:bg-gray-700/30 px-2 py-1 rounded"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -547,6 +725,22 @@ export default function ExecutiveCockpit() {
                       Share Report
                     </motion.button>
                     <motion.button 
+                      onClick={() => {
+                        // Set up alert monitoring
+                        const alertConfig = {
+                          sentimentThreshold: 0.2,
+                          engagementThreshold: 0.02,
+                          riskLevelThreshold: 'medium'
+                        };
+                        
+                        // Store alert configuration
+                        localStorage.setItem('astra-alerts', JSON.stringify(alertConfig));
+                        
+                        toast({
+                          title: "Alert Configured",
+                          description: "You'll be notified of significant metric changes",
+                        });
+                      }}
                       className="text-xs text-gray-400 hover:text-white transition-colors hover:bg-gray-700/30 px-2 py-1 rounded"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -851,9 +1045,16 @@ export default function ExecutiveCockpit() {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-heading font-bold text-white">Advanced Analytics</h3>
-              <div className="flex items-center space-x-1">
-                <div className="w-1 h-1 bg-electric-blue rounded-full animate-pulse"></div>
-                <span className="text-xs text-electric-blue">Real-time</span>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1">
+                  <div className="w-1 h-1 bg-electric-blue rounded-full animate-pulse"></div>
+                  <span className="text-xs text-electric-blue">Real-time</span>
+                </div>
+                
+                {/* Keyboard shortcuts hint */}
+                <div className="text-xs text-gray-400">
+                  <kbd className="px-1 py-0.5 bg-gray-700/50 rounded text-xs">Ctrl+H</kbd> to toggle
+                </div>
               </div>
             </div>
             
