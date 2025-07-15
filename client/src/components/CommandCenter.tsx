@@ -144,7 +144,7 @@ export default function CommandCenter() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Orbitron, sans-serif', fontWeight: 700, letterSpacing: '0.05em' }}>
+        <h1 className="text-3xl text-white mb-2" style={{ fontFamily: 'Source Sans Pro, sans-serif', fontWeight: 300, letterSpacing: '0.15em' }}>
           ASTRA INTELLIGENCE COMMAND CENTER
         </h1>
         <p className="text-gray-400">
