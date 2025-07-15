@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Award, TrendingUp, BarChart3, Search, Users, Target, Calendar, BookOpen } from "lucide-react";
+import { Award, TrendingUp, BarChart3, Search, Users, Target, Calendar, BookOpen, Navigation, Activity, Brain, Database, Clock } from "lucide-react";
 import KPICard from "./KPICard";
 import TopicChart from "./TopicChart";
 import SentimentChart from "./SentimentChart";
@@ -13,6 +13,11 @@ import DataExplorer from "./DataExplorer";
 import ContentStrategy from "./ContentStrategy";
 import PeriodComparison from "./PeriodComparison";
 import AIBriefingLibrary from "./AIBriefingLibrary";
+import NarrativeNavigator from "./NarrativeNavigator";
+import EngagementAnalytics from "./EngagementAnalytics";
+import AIInsightsHub from "./AIInsightsHub";
+import DataDiscoveryZone from "./DataDiscoveryZone";
+import MultiMonthSentimentTrend from "./MultiMonthSentimentTrend";
 import type { Analytics, Post } from "@shared/schema";
 
 export default function CommandCenter() {
@@ -78,6 +83,11 @@ export default function CommandCenter() {
   const tabs = [
     { id: 'executive', label: 'Executive Overview', icon: Award },
     { id: 'trends', label: 'Performance Trends', icon: TrendingUp },
+    { id: 'narrative', label: 'Narrative Navigator', icon: Navigation },
+    { id: 'engagement', label: 'Engagement Analytics', icon: Activity },
+    { id: 'insights', label: 'AI Insights Hub', icon: Brain },
+    { id: 'discovery', label: 'Data Discovery Zone', icon: Database },
+    { id: 'sentiment', label: 'Multi-Month Sentiment', icon: Clock },
     { id: 'strategy', label: 'Content Strategy', icon: Target },
     { id: 'comparison', label: 'Period Comparison', icon: Calendar },
     { id: 'analysis', label: 'Content Analysis', icon: BarChart3 },
@@ -92,6 +102,16 @@ export default function CommandCenter() {
         return <ExecutiveCockpit />;
       case 'trends':
         return <PerformanceTrends />;
+      case 'narrative':
+        return <NarrativeNavigator />;
+      case 'engagement':
+        return <EngagementAnalytics />;
+      case 'insights':
+        return <AIInsightsHub />;
+      case 'discovery':
+        return <DataDiscoveryZone />;
+      case 'sentiment':
+        return <MultiMonthSentimentTrend />;
       case 'strategy':
         return <ContentStrategy />;
       case 'comparison':
