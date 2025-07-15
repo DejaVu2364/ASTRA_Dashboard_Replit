@@ -13,8 +13,11 @@ import {
   BarChart3,
   Calendar,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Target,
+  Zap
 } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Tooltip } from 'recharts';
 
 interface MetricCardProps {
   title: string;
@@ -98,7 +101,7 @@ export default function ExecutiveOverview() {
 
   const totalPosts = posts?.length || 0;
   const totalEngagement = posts?.reduce((sum: number, post: any) => sum + (post.totalLikes || 0) + (post.numShares || 0), 0) || 0;
-  const avgSentiment = posts?.reduce((sum: number, post: any) => sum + (post.avgSentiment || 0), 0) / totalPosts || 0;
+  const avgSentiment = posts?.reduce((sum: number, post: any) => sum + (parseFloat(post.avgSentimentScore || '0')), 0) / totalPosts || 0;
   const totalComments = posts?.reduce((sum: number, post: any) => sum + (post.commentCount || 0), 0) || 0;
 
   const metrics = [
@@ -135,6 +138,39 @@ export default function ExecutiveOverview() {
       description: "Community engagement level"
     }
   ];
+
+  // Generate chart data from posts
+  const engagementTrendData = posts?.slice(0, 10).map((post, index) => ({
+    date: `Day ${index + 1}`,
+    engagement: parseFloat(post.weightedEngagementRate || '0') * 100
+  })).reverse() || [];
+
+  const contentPerformanceData = posts?.reduce((acc, post) => {
+    const type = post.contentType || 'Standard';
+    const existing = acc.find(item => item.type === type);
+    if (existing) {
+      existing.performance = (existing.performance + parseFloat(post.weightedEngagementRate || '0') * 100) / 2;
+    } else {
+      acc.push({
+        type,
+        performance: parseFloat(post.weightedEngagementRate || '0') * 100
+      });
+    }
+    return acc;
+  }, [] as Array<{ type: string; performance: number }>) || [];
+
+  const sentimentData = [
+    { name: 'Positive', value: 65, color: '#6B7280' },
+    { name: 'Neutral', value: 25, color: '#9CA3AF' },
+    { name: 'Negative', value: 10, color: '#4B5563' }
+  ];
+
+  const topPerformingContent = posts?.sort((a, b) => 
+    parseFloat(b.weightedEngagementRate || '0') - parseFloat(a.weightedEngagementRate || '0')
+  ).slice(0, 5).map((post, index) => ({
+    title: post.postCaption?.substring(0, 40) + '...' || `Post ${index + 1}`,
+    engagement: `${(parseFloat(post.weightedEngagementRate || '0') * 100).toFixed(1)}%`
+  })) || [];
 
   const insights = [
     {
@@ -207,14 +243,119 @@ export default function ExecutiveOverview() {
           ))}
         </div>
 
-        {/* Main Content Grid */}
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          {/* Engagement Trend Chart */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-white heading-secondary">
+                Engagement Trend
+              </h3>
+              <TrendingUp className="w-5 h-5 text-gray-400" />
+            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={engagementTrendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="date" stroke="#9CA3AF" fontSize={12} />
+                <YAxis stroke="#9CA3AF" fontSize={12} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1f2937', 
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#fff'
+                  }} 
+                />
+                <Line type="monotone" dataKey="engagement" stroke="#9CA3AF" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </motion.div>
+
+          {/* Content Performance Chart */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-white heading-secondary">
+                Content Performance
+              </h3>
+              <BarChart3 className="w-5 h-5 text-gray-400" />
+            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={contentPerformanceData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="type" stroke="#9CA3AF" fontSize={12} />
+                <YAxis stroke="#9CA3AF" fontSize={12} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1f2937', 
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#fff'
+                  }} 
+                />
+                <Bar dataKey="performance" fill="#6B7280" />
+              </BarChart>
+            </ResponsiveContainer>
+          </motion.div>
+        </div>
+
+        {/* Sentiment Distribution and Strategic Insights */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Insights */}
+          {/* Sentiment Distribution */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-white heading-secondary">
+                Sentiment Distribution
+              </h3>
+              <Activity className="w-5 h-5 text-gray-400" />
+            </div>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={sentimentData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {sentimentData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1f2937', 
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#fff'
+                  }} 
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </motion.div>
+
+          {/* Strategic Insights */}
           <div className="lg:col-span-2">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
               className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
             >
               <div className="flex items-center justify-between mb-6">
@@ -222,7 +363,7 @@ export default function ExecutiveOverview() {
                   Strategic Insights
                 </h2>
                 <div className="flex items-center space-x-2">
-                  <AlertTriangle className="w-5 h-5 text-gray-400" />
+                  <Zap className="w-5 h-5 text-gray-400" />
                   <span className="text-sm text-gray-400">AI-Generated</span>
                 </div>
               </div>
@@ -233,72 +374,113 @@ export default function ExecutiveOverview() {
               </div>
             </motion.div>
           </div>
+        </div>
 
+        {/* Key Performance Indicators */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
           {/* Performance Summary */}
-          <div className="space-y-6">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
-            >
-              <h3 className="text-xl font-semibold text-white mb-4 heading-secondary">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-white heading-secondary">
                 Performance Summary
               </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Engagement Rate</span>
-                  <span className="text-sm font-medium text-white">8.4%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Reach Growth</span>
-                  <span className="text-sm font-medium text-white">+12.5%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Content Velocity</span>
-                  <span className="text-sm font-medium text-white">4.2 posts/day</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">Sentiment Score</span>
-                  <span className="text-sm font-medium text-white">Positive</span>
-                </div>
+              <Target className="w-5 h-5 text-gray-400" />
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-400">Engagement Rate</span>
+                <span className="text-sm font-medium text-white">8.4%</span>
               </div>
-            </motion.div>
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div className="bg-gray-400 h-2 rounded-full" style={{ width: '84%' }}></div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-400">Reach Growth</span>
+                <span className="text-sm font-medium text-white">+12.5%</span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div className="bg-gray-400 h-2 rounded-full" style={{ width: '65%' }}></div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-400">Content Velocity</span>
+                <span className="text-sm font-medium text-white">4.2 posts/day</span>
+              </div>
+              <div className="w-full bg-gray-700 rounded-full h-2">
+                <div className="bg-gray-400 h-2 rounded-full" style={{ width: '70%' }}></div>
+              </div>
+            </div>
+          </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
-            >
-              <h3 className="text-xl font-semibold text-white mb-4 heading-secondary">
+          {/* Top Performing Content */}
+          <motion.div
+            initial={{ opacity: 0, x: 0 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
+            className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-white heading-secondary">
+                Top Performing Content
+              </h3>
+              <TrendingUp className="w-5 h-5 text-gray-400" />
+            </div>
+            <div className="space-y-4">
+              {topPerformingContent.map((content, index) => (
+                <div key={index} className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center">
+                    <span className="text-xs text-gray-400">{index + 1}</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-white font-medium">{content.title}</p>
+                    <p className="text-xs text-gray-400">{content.engagement} engagement</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Action Items */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.8 }}
+            className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-white heading-secondary">
                 Action Items
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
-                  <div>
-                    <p className="text-sm text-white font-medium">Optimize posting schedule</p>
-                    <p className="text-xs text-gray-400">High priority - Due tomorrow</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
-                  <div>
-                    <p className="text-sm text-white font-medium">Review content strategy</p>
-                    <p className="text-xs text-gray-400">Medium priority - This week</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
-                  <div>
-                    <p className="text-sm text-white font-medium">Expand video content</p>
-                    <p className="text-xs text-gray-400">Low priority - Next month</p>
-                  </div>
+              <AlertTriangle className="w-5 h-5 text-gray-400" />
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
+                <div>
+                  <p className="text-sm text-white font-medium">Optimize posting schedule</p>
+                  <p className="text-xs text-gray-400">High priority - Due tomorrow</p>
                 </div>
               </div>
-            </motion.div>
-          </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
+                <div>
+                  <p className="text-sm text-white font-medium">Review content strategy</p>
+                  <p className="text-xs text-gray-400">Medium priority - This week</p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-gray-400 rounded-full mt-2"></div>
+                <div>
+                  <p className="text-sm text-white font-medium">Expand video content</p>
+                  <p className="text-xs text-gray-400">Low priority - Next month</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </div>
