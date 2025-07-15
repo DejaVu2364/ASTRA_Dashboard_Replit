@@ -25,12 +25,12 @@ export default function CommandCenter() {
   
   const { data: analytics, isLoading: analyticsLoading } = useQuery<Analytics[]>({
     queryKey: ['/api/analytics'],
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes - reduced API calls
   });
 
   const { data: posts, isLoading: postsLoading } = useQuery<Post[]>({
     queryKey: ['/api/posts'],
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes - reduced API calls
   });
 
   // Process analytics data
