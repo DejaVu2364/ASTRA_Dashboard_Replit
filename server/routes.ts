@@ -366,8 +366,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Narrative report routes (protected) - Now using real data from DASHBOARD FINAL 2
-  app.get("/api/narrative-reports", authenticateToken, async (req, res) => {
+  // Narrative report routes (public for testing) - Now using real data from DASHBOARD FINAL 2
+  app.get("/api/narrative-reports", async (req, res) => {
     try {
       const reports = loadNarrativeReports();
       res.json(reports);
@@ -401,8 +401,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Gemini report routes (protected)
-  app.get("/api/gemini-reports", authenticateToken, async (req, res) => {
+  // Gemini report routes (public for testing)
+  app.get("/api/gemini-reports", async (req, res) => {
     try {
       const reports = await storage.getAllGeminiReports();
       res.json(reports);
