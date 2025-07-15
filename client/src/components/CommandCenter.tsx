@@ -144,9 +144,9 @@ export default function CommandCenter() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="text-3xl font-heading font-bold text-white mb-2">
-          Astra Intelligence Command Center
-        </h2>
+        <h1 className="text-4xl font-bold text-white mb-2" style={{ fontFamily: 'Orbitron, sans-serif', fontWeight: 700, letterSpacing: '0.05em' }}>
+          ASTRA INTELLIGENCE COMMAND CENTER
+        </h1>
         <p className="text-gray-400">
           Comprehensive political intelligence platform with AI-powered analytics
         </p>
