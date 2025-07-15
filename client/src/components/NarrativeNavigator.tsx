@@ -15,8 +15,14 @@ export default function NarrativeNavigator() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Analyze narrative patterns from posts
-  const narrativeAnalysis = posts?.reduce((acc, post) => {
+  // Fetch AI narrative analysis
+  const { data: aiNarrativeAnalysis, isLoading: narrativeLoading, refetch: refetchNarrative } = useQuery({
+    queryKey: ['/api/ai-narrative-analysis'],
+    staleTime: 3 * 60 * 1000, // 3 minutes
+  });
+
+  // Analyze narrative patterns from posts (fallback)
+  const localNarrativeAnalysis = posts?.reduce((acc, post) => {
     const topic = post.mainTopic || 'General';
     const sentiment = parseFloat(post.avgSentimentScore || '0');
     const engagement = parseFloat(post.weightedEngagementRate || '0');
@@ -40,7 +46,7 @@ export default function NarrativeNavigator() {
   }, {} as Record<string, any>) || {};
 
   // Calculate narrative strength and trends
-  const narratives = Object.values(narrativeAnalysis).map((narrative: any) => {
+  const narratives = Object.values(localNarrativeAnalysis).map((narrative: any) => {
     const postCount = narrative.posts.length;
     const avgEngagement = narrative.totalEngagement / postCount;
     const narrativeStrength = (avgEngagement * 0.4) + (Math.abs(narrative.avgSentiment) * 0.3) + (postCount * 0.3);

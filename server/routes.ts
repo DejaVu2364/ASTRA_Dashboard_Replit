@@ -8,6 +8,7 @@ import { insertUserSchema, insertPostSchema, insertCommentSchema, insertAnalytic
 import fs from "fs";
 import path from "path";
 import { parse } from "csv-parse/sync";
+import { aiService } from "./ai";
 
 const JWT_SECRET = process.env.JWT_SECRET || "astra-intelligence-secret-key";
 
@@ -398,6 +399,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(report);
     } catch (error) {
       res.status(400).json({ error: "Invalid narrative report data" });
+    }
+  });
+
+  // AI-powered insights and analysis routes
+  app.get("/api/ai-insights", async (req, res) => {
+    try {
+      const posts = await storage.getAllPosts();
+      const insights = await aiService.generateInsights(posts);
+      res.json(insights);
+    } catch (error) {
+      console.error('Error generating AI insights:', error);
+      res.status(500).json({ error: "Failed to generate AI insights" });
+    }
+  });
+
+  app.post("/api/ai-analyze-content", async (req, res) => {
+    try {
+      const { content, metrics } = req.body;
+      const analysis = await aiService.analyzeContent(content, metrics);
+      res.json(analysis);
+    } catch (error) {
+      console.error('Error analyzing content:', error);
+      res.status(500).json({ error: "Failed to analyze content" });
+    }
+  });
+
+  app.get("/api/ai-narrative-analysis", async (req, res) => {
+    try {
+      const posts = await storage.getAllPosts();
+      const narrativeAnalysis = await aiService.generateNarrativeAnalysis(posts);
+      res.json(narrativeAnalysis);
+    } catch (error) {
+      console.error('Error generating narrative analysis:', error);
+      res.status(500).json({ error: "Failed to generate narrative analysis" });
+    }
+  });
+
+  app.post("/api/ai-strategic-report", async (req, res) => {
+    try {
+      const { timeframe } = req.body;
+      const posts = await storage.getAllPosts();
+      const report = await aiService.generateStrategicReport(posts, timeframe || 'current month');
+      res.json({ report });
+    } catch (error) {
+      console.error('Error generating strategic report:', error);
+      res.status(500).json({ error: "Failed to generate strategic report" });
     }
   });
 

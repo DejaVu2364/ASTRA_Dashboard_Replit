@@ -21,7 +21,13 @@ export default function AIInsightsHub() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Generate AI insights from posts data
+  // Fetch AI-powered insights
+  const { data: aiInsights, isLoading: insightsLoading, refetch: refetchInsights } = useQuery({
+    queryKey: ['/api/ai-insights'],
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+
+  // Generate AI insights from posts data (fallback)
   const generateInsights = () => {
     if (!posts || posts.length === 0) return [];
 
@@ -128,7 +134,7 @@ export default function AIInsightsHub() {
     return insights;
   };
 
-  const insights = generateInsights();
+  const insights = aiInsights || generateInsights();
 
   const getInsightIcon = (insight: any) => {
     const IconComponent = insight.icon;
@@ -188,6 +194,15 @@ export default function AIInsightsHub() {
             <Badge variant="outline" className="text-verified-green">
               {insights.filter(i => i.actionable).length} actionable
             </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetchInsights()}
+              disabled={insightsLoading}
+              className="text-electric-blue border-electric-blue/30"
+            >
+              {insightsLoading ? 'Generating...' : 'Refresh AI'}
+            </Button>
           </div>
         </div>
 
