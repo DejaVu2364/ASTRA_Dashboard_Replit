@@ -27,18 +27,18 @@
   --ring: hsl(217, 32%, 17%);
   --radius: 0.5rem;
   
-  /* Enhanced Astra theme colors */
-  --obsidian: hsl(222, 84%, 5%);
-  --obsidian-surface: hsl(222, 47%, 11%);
-  --obsidian-border: hsl(217, 32%, 17%);
-  --electric-blue: hsl(190, 100%, 50%);
-  --electric-glow: hsl(190, 100%, 70%);
-  --verified-green: hsl(145, 80%, 42%);
-  --neon-cyan: hsl(180, 100%, 70%);
-  --pulse-blue: hsl(200, 100%, 60%);
-  --warning-amber: hsl(43, 96%, 56%);
-  --danger-red: hsl(0, 84%, 60%);
-  --success-emerald: hsl(145, 80%, 42%);
+  /* Black background theme colors */
+  --obsidian: #000000;
+  --obsidian-surface: #1a1a1a;
+  --obsidian-border: #333333;
+  --electric-blue: #00A3FF;
+  --electric-glow: #4FC3F7;
+  --verified-green: #4CAF50;
+  --neon-cyan: #00E5FF;
+  --pulse-blue: #2196F3;
+  --warning-amber: #FF9800;
+  --danger-red: #F44336;
+  --success-emerald: #4CAF50;
 }
 
 @layer base {
@@ -50,7 +50,7 @@
   }
 
   body {
-    @apply antialiased bg-obsidian text-foreground;
+    @apply antialiased text-foreground;
     font-family: 'Roboto Mono', monospace;
     font-size: 16px;
     background-color: #000000;
@@ -110,10 +110,10 @@
 
 @layer components {
   .glass-morphism {
-    backdrop-filter: blur(16px) saturate(180%);
-    background: rgba(10, 15, 27, 0.85);
-    border: 1px solid rgba(0, 217, 255, 0.2);
-    box-shadow: 0 8px 32px 0 rgba(0, 217, 255, 0.1);
+    background: rgba(26, 26, 26, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
   }
   
   .holographic-text {
@@ -127,8 +127,8 @@
   
   .cyber-grid {
     background-image: 
-      linear-gradient(rgba(0, 217, 255, 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 217, 255, 0.1) 1px, transparent 1px);
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 40px 40px;
   }
   
@@ -141,20 +141,66 @@
   }
   
   .data-card {
-    background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(0, 217, 255, 0.05) 100%);
-    border: 1px solid rgba(0, 217, 255, 0.3);
+    background: rgba(26, 26, 26, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
   }
   
   .data-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 20px 40px rgba(0, 217, 255, 0.2);
-    border-color: rgba(0, 217, 255, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 163, 255, 0.2);
+    border-color: rgba(0, 163, 255, 0.4);
+    background: rgba(26, 26, 26, 0.95);
   }
   
   .command-header {
-    background: linear-gradient(90deg, rgba(0, 217, 255, 0.1) 0%, transparent 100%);
+    background: rgba(26, 26, 26, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
     border-left: 3px solid hsl(190, 100%, 50%);
+  }
+  
+  /* MVPBlocks-inspired Clean Design */
+  .mvp-card {
+    background: rgba(10, 10, 10, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(24px);
+  }
+  
+  .mvp-card:hover {
+    border-color: rgba(0, 163, 255, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 163, 255, 0.08);
+  }
+  
+  .mvp-button {
+    background: linear-gradient(135deg, rgba(0, 163, 255, 0.1) 0%, rgba(0, 163, 255, 0.05) 100%);
+    border: 1px solid rgba(0, 163, 255, 0.2);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(16px);
+  }
+  
+  .mvp-button:hover {
+    background: linear-gradient(135deg, rgba(0, 163, 255, 0.2) 0%, rgba(0, 163, 255, 0.1) 100%);
+    border-color: rgba(0, 163, 255, 0.4);
+    transform: translateY(-1px);
+  }
+  
+  .mvp-metric {
+    background: rgba(15, 15, 15, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+  }
+  
+  .mvp-metric:hover {
+    border-color: rgba(0, 163, 255, 0.2);
+    background: rgba(20, 20, 20, 0.95);
   }
 }
 

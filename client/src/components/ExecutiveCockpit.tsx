@@ -317,35 +317,35 @@ export default function ExecutiveCockpit() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="glass-morphism p-6 rounded-xl relative overflow-hidden"
+        className="mvp-card p-6 relative overflow-hidden"
       >
         {/* Background gradient effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-electric-blue/5 via-transparent to-verified-green/5 pointer-events-none"></div>
         
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-electric-blue/20 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-4 h-4 text-electric-blue" />
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-electric-blue/10 rounded-xl flex items-center justify-center border border-electric-blue/20">
+                <AlertTriangle className="w-5 h-5 text-electric-blue" />
               </div>
               <div>
-                <h3 className="text-xl text-white heading-secondary">
+                <h3 className="text-2xl text-white heading-secondary font-semibold">
                   AI Campaign Health
                 </h3>
-                <p className="text-xs text-gray-400 text-professional">Real-time intelligence</p>
+                <p className="text-sm text-gray-400 text-professional">Real-time intelligence dashboard</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <div className="w-2 h-2 bg-verified-green rounded-full animate-pulse"></div>
-              <span className="text-xs text-verified-green font-medium">ACTIVE</span>
+              <span className="text-sm text-verified-green font-medium px-2 py-1 bg-verified-green/10 rounded-md">ACTIVE</span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {/* Enhanced Health Status Card */}
             <motion.div 
-              className={`bg-gray-900/40 rounded-lg p-4 border transition-all duration-200 cursor-pointer group ${
-                selectedMetric === 'status' ? 'border-electric-blue' : 'border-gray-700/30 hover:border-gray-600/50'
+              className={`mvp-metric cursor-pointer group ${
+                selectedMetric === 'status' ? 'border-electric-blue' : ''
               }`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -393,7 +393,7 @@ export default function ExecutiveCockpit() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="mt-3 p-2 bg-gray-800/50 rounded border border-gray-700/30"
+                    className="mt-3 p-2 bg-gray-800/50 rounded border border-gray-700/50"
                   >
                     <div className="space-y-1 text-xs">
                       <div className="flex justify-between">
@@ -419,7 +419,7 @@ export default function ExecutiveCockpit() {
 
             {/* Engagement Card with Chunked Information */}
             <motion.div 
-              className="bg-gray-900/40 rounded-lg p-4 border border-gray-700/30 hover:border-gray-600/50 transition-all duration-200 cursor-pointer group"
+              className="mvp-metric cursor-pointer group"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -445,7 +445,7 @@ export default function ExecutiveCockpit() {
 
             {/* Reach Card with Contextual Information */}
             <motion.div 
-              className="bg-gray-900/40 rounded-lg p-4 border border-gray-700/30 hover:border-gray-600/50 transition-all duration-200 cursor-pointer group"
+              className="mvp-metric cursor-pointer group"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -504,7 +504,7 @@ export default function ExecutiveCockpit() {
           </motion.div>
 
           {/* Action Footer */}
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-700/30">
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-700/50">
             <div className="flex items-center space-x-2 text-xs text-gray-400">
               <div className="w-1 h-1 bg-electric-blue rounded-full animate-pulse"></div>
               <span>Updated {new Date().toLocaleTimeString()}</span>
@@ -520,8 +520,8 @@ export default function ExecutiveCockpit() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sentiment Distribution */}
-        <div className="glass-morphism p-6 rounded-xl">
-          <h3 className="text-xl text-white mb-4 heading-secondary">
+        <div className="mvp-card p-6">
+          <h3 className="text-2xl text-white mb-6 heading-secondary font-semibold">
             Sentiment Distribution
           </h3>
           <div className="h-64 relative">
@@ -586,8 +586,8 @@ export default function ExecutiveCockpit() {
         </div>
 
         {/* 6-Month Reach Trend */}
-        <div className="glass-morphism p-6 rounded-xl">
-          <h3 className="text-xl text-white mb-4 heading-secondary">
+        <div className="mvp-card p-6">
+          <h3 className="text-2xl text-white mb-6 heading-secondary font-semibold">
             6-Month Reach Trend
           </h3>
           <div className="h-48">
@@ -640,7 +640,7 @@ export default function ExecutiveCockpit() {
 
         {/* Performance Insights with Cognitive Load Reduction */}
         <motion.div 
-          className="glass-morphism p-6 rounded-xl"
+          className="mvp-card p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -726,7 +726,7 @@ export default function ExecutiveCockpit() {
           </div>
           
           {/* Enhanced insights with predictive analytics */}
-          <div className="mt-4 p-3 bg-gray-900/30 rounded-lg border border-gray-700/30">
+          <div className="mt-4 p-3 bg-gray-900/30 rounded-lg border border-gray-700/50">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-electric-blue/20 rounded-full flex items-center justify-center">
