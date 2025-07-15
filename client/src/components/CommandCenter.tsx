@@ -144,10 +144,18 @@ export default function CommandCenter() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl text-white mb-2" style={{ fontFamily: 'Anton, sans-serif', letterSpacing: '0.1em' }}>
+        <h1 className="text-4xl text-white mb-3 tracking-wider" style={{ 
+          fontFamily: 'Anton, sans-serif', 
+          letterSpacing: '0.15em',
+          textShadow: '0 2px 4px rgba(0, 163, 255, 0.3)',
+          background: 'linear-gradient(135deg, #FFFFFF 0%, #00A3FF 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text'
+        }}>
           ASTRA INTELLIGENCE COMMAND CENTER
         </h1>
-        <p className="text-gray-400">
+        <p className="text-gray-400 text-sm tracking-wide" style={{ fontFamily: 'Source Sans Pro, sans-serif', fontWeight: 400 }}>
           Comprehensive political intelligence platform with AI-powered analytics
         </p>
       </motion.div>
