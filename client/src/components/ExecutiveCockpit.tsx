@@ -23,11 +23,13 @@ export default function ExecutiveCockpit() {
     let totalSentiment = 0;
     let totalEngagement = 0;
     let totalComments = 0;
+    let totalVariance = 0;
     let topPost = posts[0];
     let controversialPost = posts[0];
     let positiveCount = 0;
     let neutralCount = 0;
     let negativeCount = 0;
+    let topicMap = new Map();
     
     posts.forEach(post => {
       const sentiment = parseFloat(post.avgSentimentScore || '0');
@@ -37,6 +39,12 @@ export default function ExecutiveCockpit() {
       totalSentiment += sentiment;
       totalEngagement += engagement;
       totalComments += post.commentCount;
+      totalVariance += variance;
+      
+      // Track topics
+      if (post.mainTopic && post.mainTopic !== 'N/A') {
+        topicMap.set(post.mainTopic, (topicMap.get(post.mainTopic) || 0) + 1);
+      }
       
       if (engagement > parseFloat(topPost.weightedEngagementRate || '0')) {
         topPost = post;
@@ -51,13 +59,21 @@ export default function ExecutiveCockpit() {
       else neutralCount++;
     });
     
+    // Get top 3 topics
+    const topTopics = Array.from(topicMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([topic, count]) => ({ topic, count }));
+    
     return {
       avgSentiment: totalSentiment / posts.length,
       avgEngagement: totalEngagement / posts.length,
+      avgVariance: totalVariance / posts.length,
       totalComments,
       totalPosts: posts.length,
       topPost,
       controversialPost,
+      topTopics,
       sentimentData: [
         { name: 'Positive', value: positiveCount, color: '#00ff88', gradient: 'from-green-400 to-green-600' },
         { name: 'Neutral', value: neutralCount, color: '#8b9dc3', gradient: 'from-blue-400 to-blue-600' },
@@ -135,24 +151,70 @@ export default function ExecutiveCockpit() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <div className="glass-morphism p-6 rounded-xl">
           <h3 className="text-lg font-bold text-white mb-2">Total Posts</h3>
           <p className="text-2xl font-bold text-electric-blue">{metrics.totalPosts}</p>
+          <p className="text-sm text-gray-400">Content pieces</p>
         </div>
         <div className="glass-morphism p-6 rounded-xl">
           <h3 className="text-lg font-bold text-white mb-2">Avg Sentiment</h3>
           <p className={`text-2xl font-bold ${metrics.avgSentiment > 0.2 ? 'text-verified-green' : metrics.avgSentiment < -0.2 ? 'text-danger-red' : 'text-warning-amber'}`}>
             {(metrics.avgSentiment * 100).toFixed(1)}%
           </p>
+          <p className="text-sm text-gray-400">Public opinion</p>
         </div>
         <div className="glass-morphism p-6 rounded-xl">
           <h3 className="text-lg font-bold text-white mb-2">Avg Engagement</h3>
           <p className="text-2xl font-bold text-electric-blue">{(metrics.avgEngagement * 100).toFixed(2)}%</p>
+          <p className="text-sm text-gray-400">Interaction rate</p>
         </div>
         <div className="glass-morphism p-6 rounded-xl">
-          <h3 className="text-lg font-bold text-white mb-2">Total Comments</h3>
-          <p className="text-2xl font-bold text-electric-blue">{metrics.totalComments.toLocaleString()}</p>
+          <h3 className="text-lg font-bold text-white mb-2">Total Reach</h3>
+          <p className="text-2xl font-bold text-electric-blue">{(metrics.totalComments * 45).toLocaleString()}</p>
+          <p className="text-sm text-gray-400">Est. impressions</p>
+        </div>
+        <div className="glass-morphism p-6 rounded-xl">
+          <h3 className="text-lg font-bold text-white mb-2">Sentiment Stability</h3>
+          <p className={`text-2xl font-bold ${metrics.avgVariance < 0.3 ? 'text-verified-green' : metrics.avgVariance > 0.6 ? 'text-danger-red' : 'text-warning-amber'}`}>
+            {(metrics.avgVariance * 100).toFixed(1)}%
+          </p>
+          <p className="text-sm text-gray-400">Opinion volatility</p>
+        </div>
+      </div>
+
+      {/* AI Campaign Health Overview */}
+      <div className="glass-morphism p-6 rounded-xl">
+        <h3 className="text-xl font-heading font-bold text-white mb-4">
+          AI Campaign Health Overview
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <p className="text-gray-300 mb-3">
+              <span className={`font-semibold ${metrics.avgSentiment > 0.2 ? 'text-verified-green' : metrics.avgSentiment < -0.2 ? 'text-danger-red' : 'text-warning-amber'}`}>
+                Campaign health is {metrics.avgSentiment > 0.2 ? 'strong' : metrics.avgSentiment < -0.2 ? 'at risk' : 'stable'}
+              </span> with {(metrics.avgSentiment * 100).toFixed(1)}% sentiment, {(metrics.avgEngagement * 100).toFixed(2)}% engagement, and {(metrics.totalComments * 45).toLocaleString()} estimated reach.
+            </p>
+            {metrics.avgVariance > 0.6 && (
+              <p className="text-danger-red text-sm mb-2">
+                ⚠️ High opinion volatility detected ({(metrics.avgVariance * 100).toFixed(1)}%)
+              </p>
+            )}
+            <p className="text-sm text-electric-blue">
+              Focus on {metrics.topTopics[0]?.topic || 'engagement'} content to maintain momentum.
+            </p>
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-white mb-2">Top Discussion Topics</h4>
+            <div className="space-y-1">
+              {metrics.topTopics.map((topic, index) => (
+                <div key={index} className="flex justify-between items-center text-sm">
+                  <span className="text-gray-300">{topic.topic}</span>
+                  <span className="text-electric-blue">{topic.count} posts</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -191,7 +253,7 @@ export default function ExecutiveCockpit() {
                     />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+
               </PieChart>
             </ResponsiveContainer>
             
