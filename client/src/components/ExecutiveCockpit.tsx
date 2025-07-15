@@ -11,15 +11,19 @@ export default function ExecutiveCockpit() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
 
-  const { data: posts, isLoading: postsLoading } = useQuery<Post[]>({
+  const { data: posts, isLoading: postsLoading, error: postsError } = useQuery<Post[]>({
     queryKey: ['/api/posts', refreshKey],
     staleTime: 10 * 60 * 1000, // 10 minutes cache
   });
 
-  const { data: analytics, isLoading: analyticsLoading } = useQuery<Analytics[]>({
+  const { data: analytics, isLoading: analyticsLoading, error: analyticsError } = useQuery<Analytics[]>({
     queryKey: ['/api/analytics', refreshKey],
     staleTime: 10 * 60 * 1000, // 10 minutes cache
   });
+
+  // Debug logging
+  console.log('Posts data:', posts?.length, 'Loading:', postsLoading, 'Error:', postsError);
+  console.log('Analytics data:', analytics?.length, 'Loading:', analyticsLoading, 'Error:', analyticsError);
 
   // Calculate 6-month reach trend data
   const reachTrendData = useMemo(() => {
@@ -108,7 +112,9 @@ export default function ExecutiveCockpit() {
 
   // Memoize expensive calculations
   const metrics = useMemo(() => {
-    if (!posts || posts.length === 0) return null;
+    if (!posts || posts.length === 0) {
+      return null;
+    }
     
     let totalSentiment = 0;
     let totalEngagement = 0;
@@ -128,7 +134,7 @@ export default function ExecutiveCockpit() {
       
       totalSentiment += sentiment;
       totalEngagement += engagement;
-      totalComments += post.commentCount;
+      totalComments += parseInt(String(post.commentCount || '0'));
       totalVariance += variance;
       
       // Track topics
@@ -136,11 +142,11 @@ export default function ExecutiveCockpit() {
         topicMap.set(post.mainTopic, (topicMap.get(post.mainTopic) || 0) + 1);
       }
       
-      if (engagement > parseFloat(topPost.weightedEngagementRate || '0')) {
+      if (engagement > parseFloat(String(topPost.weightedEngagementRate || '0'))) {
         topPost = post;
       }
       
-      if (variance > parseFloat(controversialPost.sentimentVariance || '0')) {
+      if (variance > parseFloat(String(controversialPost.sentimentVariance || '0'))) {
         controversialPost = post;
       }
       
