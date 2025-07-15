@@ -277,72 +277,43 @@ export default function ExecutiveCockpit() {
 
       {/* AI Campaign Health Overview */}
       <div className="glass-morphism p-6 rounded-xl">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-heading font-bold text-white">
-            Campaign Health
-          </h3>
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-            metrics.avgSentiment > 0.2 ? 'bg-verified-green/20 text-verified-green' : 
-            metrics.avgSentiment < -0.2 ? 'bg-danger-red/20 text-danger-red' : 
-            'bg-warning-amber/20 text-warning-amber'
-          }`}>
-            {metrics.avgSentiment > 0.2 ? 'Strong' : metrics.avgSentiment < -0.2 ? 'At Risk' : 'Stable'}
-          </span>
-        </div>
-
+        <h3 className="text-xl font-heading font-bold text-white mb-6">
+          AI Campaign Health Overview
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Left Column - Key Metrics */}
+          {/* Health Status */}
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400">Sentiment</span>
-              <span className="text-white font-medium">{(metrics.avgSentiment * 100).toFixed(1)}%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400">Engagement</span>
-              <span className="text-white font-medium">{(metrics.avgEngagement * 100).toFixed(2)}%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400">Est. Reach</span>
-              <span className="text-white font-medium">{(metrics.totalComments * 35 + metrics.totalPosts * 850).toLocaleString()}</span>
-            </div>
-            <div className="pt-2 border-t border-gray-700">
-              <p className="text-sm text-electric-blue">
-                Focus on {metrics.topTopics[0]?.topic || 'engagement'} content
-              </p>
-            </div>
+            <h4 className="text-sm font-semibold text-white mb-3">Campaign Health</h4>
+            <p className="text-gray-300 mb-4">
+              <span className={`font-semibold ${metrics.avgSentiment > 0.2 ? 'text-verified-green' : metrics.avgSentiment < -0.2 ? 'text-danger-red' : 'text-warning-amber'}`}>
+                {metrics.avgSentiment > 0.2 ? 'Strong' : metrics.avgSentiment < -0.2 ? 'At Risk' : 'Stable'}
+              </span> with {(metrics.avgSentiment * 100).toFixed(1)}% sentiment, {(metrics.avgEngagement * 100).toFixed(2)}% engagement, and {(metrics.totalComments * 35 + metrics.totalPosts * 850).toLocaleString()} estimated reach.
+            </p>
+            <p className="text-sm text-electric-blue">
+              Focus on {metrics.topTopics[0]?.topic || 'engagement'} content to maintain momentum.
+            </p>
           </div>
 
-          {/* Right Column - Risk & Topics */}
+          {/* Risk Assessment */}
           <div className="space-y-4">
-            {metrics.riskPoints.length > 0 ? (
-              <div>
-                <h4 className="text-sm font-semibold text-white mb-3">Risk Alerts</h4>
-                <div className="space-y-2">
-                  {metrics.riskPoints.slice(0, 2).map((risk, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <span className={`w-1.5 h-1.5 rounded-full ${
-                        risk.level === 'high' ? 'bg-danger-red' : 
-                        risk.level === 'medium' ? 'bg-warning-amber' : 'bg-electric-blue'
-                      }`} />
-                      <span className="text-sm text-gray-300">{risk.title}</span>
+            <h4 className="text-sm font-semibold text-white mb-3">Risk Assessment</h4>
+            <div className="space-y-3">
+              {metrics.riskPoints.length > 0 ? (
+                metrics.riskPoints.map((risk, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <span className={`w-2 h-2 rounded-full mt-1 ${
+                      risk.level === 'high' ? 'bg-danger-red' : 
+                      risk.level === 'medium' ? 'bg-warning-amber' : 'bg-electric-blue'
+                    }`} />
+                    <div className="flex-1">
+                      <p className="text-sm text-white font-medium">{risk.title}</p>
+                      <p className="text-xs text-gray-400 mt-1">{risk.description}</p>
                     </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="text-sm text-verified-green">✓ No significant risks detected</div>
-            )}
-            
-            <div className="pt-2 border-t border-gray-700">
-              <h4 className="text-sm font-semibold text-white mb-2">Top Topics</h4>
-              <div className="space-y-1">
-                {metrics.topTopics.slice(0, 2).map((topic, index) => (
-                  <div key={index} className="flex justify-between items-center text-sm">
-                    <span className="text-gray-400">{topic.topic}</span>
-                    <span className="text-electric-blue">{topic.count}</span>
                   </div>
-                ))}
-              </div>
+                ))
+              ) : (
+                <p className="text-sm text-verified-green">No significant risks detected</p>
+              )}
             </div>
           </div>
         </div>
