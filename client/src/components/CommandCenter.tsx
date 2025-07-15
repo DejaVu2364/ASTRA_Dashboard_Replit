@@ -1,13 +1,15 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Award, TrendingUp, BarChart3, Search, Users, Target, Calendar, BookOpen, Navigation, Activity, Brain, Database, Clock } from "lucide-react";
+import { Award, TrendingUp, BarChart3, Search, Users, Target, Calendar, BookOpen, Navigation, Activity, Brain, Database, Clock, MessageSquare } from "lucide-react";
 import KPICard from "./KPICard";
 import TopicChart from "./TopicChart";
 import SentimentChart from "./SentimentChart";
 import PostTable from "./PostTable";
 import IntelligenceSearch from "./IntelligenceSearch";
 import ExecutiveCockpit from "./ExecutiveCockpit";
+import ExecutiveOverview from "./ExecutiveOverview";
+import ChatbotInterface from "./ChatbotInterface";
 import PerformanceTrends from "./PerformanceTrends";
 import DataExplorer from "./DataExplorer";
 import ContentStrategy from "./ContentStrategy";
@@ -21,7 +23,7 @@ import MultiMonthSentimentTrend from "./MultiMonthSentimentTrend";
 import type { Analytics, Post } from "@shared/schema";
 
 export default function CommandCenter() {
-  const [activeTab, setActiveTab] = useState('executive');
+  const [activeTab, setActiveTab] = useState('overview');
   
   const { data: analytics, isLoading: analyticsLoading } = useQuery<Analytics[]>({
     queryKey: ['/api/analytics'],
@@ -81,26 +83,25 @@ export default function CommandCenter() {
   ];
 
   const tabs = [
-    { id: 'executive', label: 'Executive Overview', icon: Award },
+    { id: 'overview', label: 'Executive Overview', icon: Award },
+    { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
+    { id: 'executive', label: 'Campaign Health', icon: Activity },
     { id: 'insights', label: 'AI Insights Hub', icon: Brain },
-    { id: 'narrative', label: 'Narrative Navigator', icon: Navigation },
-    { id: 'engagement', label: 'Engagement Analytics', icon: Activity },
-    { id: 'strategy', label: 'Content Strategy & Analysis', icon: Target },
-    { id: 'discovery', label: 'Data Discovery & Explorer', icon: Database },
-    { id: 'trends', label: 'Performance & Sentiment Trends', icon: TrendingUp },
-    { id: 'briefing', label: 'AI Briefing Library', icon: BookOpen },
+    { id: 'strategy', label: 'Content Strategy', icon: Target },
+    { id: 'discovery', label: 'Data Explorer', icon: Database },
+    { id: 'briefing', label: 'AI Reports', icon: BookOpen },
   ];
 
   const renderActiveTab = () => {
     switch (activeTab) {
+      case 'overview':
+        return <ExecutiveOverview />;
+      case 'chat':
+        return <ChatbotInterface />;
       case 'executive':
         return <ExecutiveCockpit />;
       case 'insights':
         return <AIInsightsHub />;
-      case 'narrative':
-        return <NarrativeNavigator />;
-      case 'engagement':
-        return <EngagementAnalytics />;
       case 'strategy':
         return (
           <div className="space-y-8">
@@ -120,18 +121,10 @@ export default function CommandCenter() {
             <IntelligenceSearch />
           </div>
         );
-      case 'trends':
-        return (
-          <div className="space-y-8">
-            <PerformanceTrends />
-            <MultiMonthSentimentTrend />
-            <PeriodComparison />
-          </div>
-        );
       case 'briefing':
         return <AIBriefingLibrary />;
       default:
-        return <ExecutiveCockpit />;
+        return <ExecutiveOverview />;
     }
   };
 
@@ -160,28 +153,28 @@ export default function CommandCenter() {
         </p>
       </motion.div>
 
-      {/* Navigation Tabs */}
+      {/* Navigation Tabs - MVP Blocks Style */}
       <motion.div
-        className="glass-morphism p-2 rounded-xl"
+        className="mvp-card p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
-        <div className="flex space-x-2 overflow-x-auto">
+        <div className="flex flex-wrap gap-3">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-4 py-2 rounded-lg transition-all whitespace-nowrap ${
+                className={`mvp-button flex items-center space-x-3 px-6 py-3 rounded-xl transition-all duration-200 whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'bg-electric-blue text-obsidian-darker'
-                    : 'text-gray-400 hover:text-white hover:bg-obsidian-surface'
+                    ? 'bg-gradient-to-r from-blue-500/20 to-blue-600/20 border-blue-500/40 text-white shadow-lg transform scale-105'
+                    : 'text-gray-300 hover:text-white hover:scale-102'
                 }`}
               >
-                <Icon className="w-4 h-4 mr-2" />
-                {tab.label}
+                <Icon className="w-5 h-5" />
+                <span className="text-sm font-medium text-professional">{tab.label}</span>
               </button>
             );
           })}

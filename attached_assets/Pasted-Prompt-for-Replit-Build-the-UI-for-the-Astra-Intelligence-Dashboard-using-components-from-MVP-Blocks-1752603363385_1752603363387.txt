@@ -1,0 +1,52 @@
+Prompt for Replit
+Build the UI for the Astra Intelligence Dashboard using components from MVP Blocks, an open-source library built with Next.js, Tailwind CSS, and Framer Motion. The dashboard is tailored for political strategists and social media managers, requiring a minimalistic yet professional design with a 10/10 aesthetic and functionality rating.
+
+Implementation Steps:
+
+Ensure the project is set up with a React environment (e.g., Vite + React). If not, initialize it with npm create vite@latest astra-dashboard --template react and install dependencies: npm install @tanstack/react-table framer-motion axios react-markdown tailwindcss postcss autoprefixer.
+Integrate Tailwind CSS by creating tailwind.config.js:
+javascript
+
+Collapse
+
+Wrap
+
+Run
+
+Copy
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: { extend: {} },
+  plugins: [],
+};
+and updating postcss.config.js:
+javascript
+
+Collapse
+
+Wrap
+
+Run
+
+Copy
+module.exports = { plugins: { tailwindcss: {}, autoprefixer: {}, }, };
+Import MVP Blocks components by visiting https://blocks.mvp-subha.me/, selecting relevant pre-built UI blocks (e.g., Dashboards, Cards, Buttons, Headers), and copying their code directly into your project. Focus on components like:
+Admin Dashboard for the main layout.
+Basic Cards or Product Cards for metric displays.
+Buttons for interactive elements.
+Headers for the top navigation.
+Any additional blocks (e.g., Modals, Progress) that enhance functionality.
+Adapt the copied MVP Blocks code into your React components (e.g., src/components/ExecutiveOverview.jsx, src/components/Dashboard.jsx) by:
+Wrapping components in a motion.div from Framer Motion for smooth animations.
+Customizing Tailwind classes to match the black-and-white theme (#000000 background, #FFFFFF text, #E0E0E0 accents).
+Ensuring responsiveness using Tailwind’s sm:, md:, and lg: utilities.
+Connect the UI to the existing data pipeline (public/FB Pipeline/monthly_summaries/post_summary_YYYY-MM.csv with fields: post_id, post_caption, main_topic, avg_sentiment_score, weighted_engagement_rate, total_likes, num_shares, comment_count, content_type, and report-YYYY-MM.md) using Axios for API calls (e.g., /api/data/:month) defined in server.js.
+Group tabs intuitively (e.g., Executive Overview as the first tab, followed by Analytics, Insights, etc.) and integrate AI query functionality using a chatbot UI component from MVP Blocks, linked to pipeline data.
+Test the UI by running npm run dev in the Replit terminal, ensuring all components render correctly, are responsive, and display accurate data. Adjust styling or layout as needed to achieve a 10/10 design.
+Notes:
+
+Use the uploaded project files to understand the pipeline and existing structure.
+Leverage MVP Blocks’ copy-paste readiness and built-in animations to save time while maintaining a professional look.
+Focus on data accuracy and a seamless user experience, aligning with the dashboard’s purpose for political campaign management.
+Proceed with these steps to build the UI, and upload the final project files when complete. Let me know if further refinements are needed after testing!
