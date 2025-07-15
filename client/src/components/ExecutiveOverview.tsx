@@ -312,78 +312,71 @@ export default function ExecutiveOverview() {
           ))}
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Engagement Trend Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-xl font-semibold text-white heading-secondary">
-                  6-Month Engagement Trend
-                </h3>
-                <p className="text-sm text-gray-400">Engagement rate and sentiment over time</p>
-              </div>
-              <TrendingUp className="w-5 h-5 text-gray-400" />
-            </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={engagementTrendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="month" stroke="#9CA3AF" fontSize={12} />
-                <YAxis stroke="#9CA3AF" fontSize={12} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1f2937', 
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#fff'
-                  }}
-                  formatter={(value: any, name: string) => [
-                    `${typeof value === 'number' ? value.toFixed(1) : value}${name === 'engagement' ? '%' : ''}`,
-                    name === 'engagement' ? 'Engagement Rate' : 'Sentiment Score'
-                  ]}
-                />
-                <Line type="monotone" dataKey="engagement" stroke="#9CA3AF" strokeWidth={2} dot={{ fill: '#9CA3AF', r: 4 }} />
-                <Line type="monotone" dataKey="sentiment" stroke="#6B7280" strokeWidth={2} dot={{ fill: '#6B7280', r: 4 }} strokeDasharray="5 5" />
-              </LineChart>
-            </ResponsiveContainer>
-          </motion.div>
-
-          {/* Content Performance Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
+        {/* Full-width Engagement Trend Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div>
               <h3 className="text-xl font-semibold text-white heading-secondary">
-                Content Performance
+                6-Month Engagement Trend
               </h3>
-              <BarChart3 className="w-5 h-5 text-gray-400" />
+              <p className="text-sm text-gray-400">Engagement rate and sentiment over time</p>
             </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={contentPerformanceData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="type" stroke="#9CA3AF" fontSize={12} />
-                <YAxis stroke="#9CA3AF" fontSize={12} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1f2937', 
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#fff'
-                  }} 
-                />
-                <Bar dataKey="performance" fill="#6B7280" />
-              </BarChart>
-            </ResponsiveContainer>
-          </motion.div>
-        </div>
+            <TrendingUp className="w-5 h-5 text-gray-400" />
+          </div>
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={engagementTrendData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+              <XAxis 
+                dataKey="month" 
+                stroke="#9CA3AF" 
+                fontSize={12} 
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis 
+                stroke="#9CA3AF" 
+                fontSize={12} 
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#111827', 
+                  border: '1px solid #374151',
+                  borderRadius: '12px',
+                  color: '#fff',
+                  boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
+                }}
+                formatter={(value: any, name: string) => [
+                  `${typeof value === 'number' ? value.toFixed(1) : value}${name === 'engagement' ? '%' : ''}`,
+                  name === 'engagement' ? 'Engagement Rate' : 'Sentiment Score'
+                ]}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="engagement" 
+                stroke="#ffffff" 
+                strokeWidth={3}
+                dot={{ fill: '#ffffff', strokeWidth: 2, r: 5 }}
+                activeDot={{ r: 8, fill: '#ffffff' }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="sentiment" 
+                stroke="#6B7280" 
+                strokeWidth={2}
+                dot={{ fill: '#6B7280', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, fill: '#6B7280' }}
+                strokeDasharray="5 5"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </motion.div>
 
         {/* Sentiment Distribution and Strategic Insights */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -454,7 +447,7 @@ export default function ExecutiveOverview() {
         </div>
 
         {/* Key Performance Indicators */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
           {/* Performance Summary */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -493,43 +486,7 @@ export default function ExecutiveOverview() {
             </div>
           </motion.div>
 
-          {/* Market Intelligence */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-            className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-white heading-secondary">
-                Market Intelligence
-              </h3>
-              <Users className="w-5 h-5 text-gray-400" />
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Indian Market Share</span>
-                <span className="text-sm font-medium text-white">23.4%</span>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-2">
-                <div className="bg-gray-400 h-2 rounded-full" style={{ width: '23.4%' }}></div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Tier 2/3 Penetration</span>
-                <span className="text-sm font-medium text-white">67%</span>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-2">
-                <div className="bg-gray-400 h-2 rounded-full" style={{ width: '67%' }}></div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Regional Language CTR</span>
-                <span className="text-sm font-medium text-white">2.8x</span>
-              </div>
-              <div className="w-full bg-gray-700 rounded-full h-2">
-                <div className="bg-gray-400 h-2 rounded-full" style={{ width: '85%' }}></div>
-              </div>
-            </div>
-          </motion.div>
+
         </div>
       </div>
     </div>

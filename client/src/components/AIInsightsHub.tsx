@@ -137,8 +137,8 @@ export default function AIInsightsHub() {
   const insights = aiInsights || generateInsights();
 
   const getInsightIcon = (insight: any) => {
-    const IconComponent = insight.icon;
-    return <IconComponent className={`w-5 h-5 text-${insight.color}`} />;
+    const IconComponent = insight.icon || Brain;
+    return <IconComponent className={`w-5 h-5 text-gray-400`} />;
   };
 
   const getPriorityColor = (priority: string) => {
