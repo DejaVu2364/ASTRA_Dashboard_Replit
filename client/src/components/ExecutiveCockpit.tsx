@@ -388,7 +388,7 @@ export default function ExecutiveCockpit() {
                 <Award className="w-3 h-3 text-verified-green" />
               </div>
               <div className="text-2xl font-bold text-white mb-1">
-                {((metrics.totalComments * 35 + metrics.totalPosts * 850) / 1000).toFixed(0)}K
+                {((metrics.totalComments * 35 + metrics.totalPosts * 850) / 1000000).toFixed(2)}M
               </div>
               <div className="text-xs text-gray-400">Est. impressions</div>
             </div>
@@ -549,42 +549,54 @@ export default function ExecutiveCockpit() {
           </div>
         </div>
 
-        {/* Top Posts */}
+        {/* Performance Insights */}
         <div className="glass-morphism p-6 rounded-xl">
           <h3 className="text-xl font-heading font-bold text-white mb-4">
-            Key Posts
+            Performance Insights
           </h3>
-          <div className="space-y-4">
-            {/* Top Performing Post */}
-            <div className="border border-verified-green/30 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <Badge variant="outline" className="text-verified-green">
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                  Top Performing
-                </Badge>
-                <span className="text-sm text-verified-green">
-                  {(parseFloat(metrics.topPost.weightedEngagementRate || '0') * 100).toFixed(2)}%
-                </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Content Performance */}
+            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-white">Content Analysis</h4>
+                <TrendingUp className="w-4 h-4 text-electric-blue" />
               </div>
-              <p className="text-sm text-gray-300 line-clamp-2">
-                {metrics.topPost.postCaption || 'No caption available'}
-              </p>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400">Avg. Comments/Post</span>
+                  <span className="text-white">{(metrics.totalComments / metrics.totalPosts).toFixed(1)}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400">High Engagement Posts</span>
+                  <span className="text-white">{posts.filter(p => parseFloat(p.weightedEngagementRate || '0') > 0.02).length}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400">Positive Sentiment</span>
+                  <span className="text-verified-green">{posts.filter(p => parseFloat(p.avgSentimentScore || '0') > 0.2).length}</span>
+                </div>
+              </div>
             </div>
 
-            {/* Controversial Post */}
-            <div className="border border-warning-amber/30 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <Badge variant="outline" className="text-warning-amber">
-                  <AlertTriangle className="w-3 h-3 mr-1" />
-                  Most Controversial
-                </Badge>
-                <span className="text-sm text-warning-amber">
-                  {(parseFloat(metrics.controversialPost.sentimentVariance || '0') * 100).toFixed(1)}% variance
-                </span>
+            {/* Audience Engagement */}
+            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-white">Audience Insights</h4>
+                <Award className="w-4 h-4 text-verified-green" />
               </div>
-              <p className="text-sm text-gray-300 line-clamp-2">
-                {metrics.controversialPost.postCaption || 'No caption available'}
-              </p>
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400">Total Interactions</span>
+                  <span className="text-white">{metrics.totalComments.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400">Engagement Rate</span>
+                  <span className="text-electric-blue">{(metrics.avgEngagement * 100).toFixed(2)}%</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-400">Reach/Post</span>
+                  <span className="text-white">{((metrics.totalComments * 35 + metrics.totalPosts * 850) / metrics.totalPosts / 1000).toFixed(0)}K</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
