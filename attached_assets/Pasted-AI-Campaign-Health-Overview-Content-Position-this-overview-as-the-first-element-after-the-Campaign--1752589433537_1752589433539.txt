@@ -1,0 +1,95 @@
+AI Campaign Health Overview Content
+Position this overview as the first element after the “Campaign Command Center” header, styled in a sleek #1A1A1A card with #FFFFFF text and subtle #E0E0E0 accents, animated with a fade-in via Framer Motion. The content should blend standard metrics with unexpected, thought-provoking insights to make viewers say “interesting.” Here’s the breakdown:
+
+Headline Health Pulse: A bold one-liner like “Campaign Pulse: Thriving with a +0.45 Sentiment Surge,” summarizing overall health based on average sentiment. The twist? Highlight an unusual driver (e.g., “fueled by a viral meme wave”), piquing curiosity about the source.
+Metric Mosaic: Present three key stats with a narrative hook:
+Sentiment Score: “Sentiment soars to +0.45, with 60% of buzz from unexpected rural voices.”
+Engagement Rate: “Engagement hits 2.5%, spiked by a rogue 500-comment thread on taxes.”
+Reach Estimate: “Reach explodes to 880,000, thanks to a sleeper hit post on education.” These quirks (rural voices, rogue threads, sleeper hits) add an “interesting” layer by revealing hidden patterns.
+Trend Teaser: A mini-insight like “Sentiment flipped +0.2 in a week after a policy shift—why?” This invites speculation and drives users to dig into the Multi-Month Sentiment Trend.
+Wild Card Stat: An offbeat metric, e.g., “Top emoji: 😂 used 1,200 times, signaling humor’s edge,” sourced from comment analysis, adding a fun, unexpected angle.
+Actionable Zinger: A recommendation with a twist, like “Double down on quirky videos— they’re outpacing serious posts 3:1,” blending strategy with intrigue.
+Keep it under 100 words, with bolded keywords (e.g., surge, rogue) for emphasis, ensuring it’s concise yet captivating.
+
+Execution Plan
+1. Data Integration
+Use the existing ExecutiveOverview component’s data fetch logic to pull avg_sentiment_score, weighted_engagement_rate, and comment fields from /api/data/:month.
+Simulate AI generation with conditional logic:
+Health: If avgSentiment > 0.2, “Thriving”; if < -0.3, “At Risk”; else “Stable.”
+Trend: Compare last two weeks’ sentiment (approximated from monthly data).
+Wild Card: Parse most_positive_comment or original_comment_for_context for emoji frequency using a simple regex (e.g., /[\u{1F600}-\u{1F64F}]/u).
+Update the AIOverview component in src/components/ExecutiveOverview.jsx:
+javascript
+
+Collapse
+
+Wrap
+
+Run
+
+Copy
+const AIOverview = () => {
+  const [overview, setOverview] = useState('');
+
+  useEffect(() => {
+    const generateOverview = async () => {
+      try {
+        const month = months[months.length - 1];
+        const response = await axios.get(`/api/data/${month}`);
+        const lines = response.data.trim().split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        const data = lines.slice(1).map(line => {
+          const values = line.split(',').map(v => v.trim());
+          return headers.reduce((obj, header, i) => {
+            obj[header] = values[i] || '';
+            return obj;
+          }, {});
+        });
+        const validData = data.filter(row => row.post_id && parseFloat(row.avg_sentiment_score) && parseFloat(row.weighted_engagement_rate));
+        const avgSentiment = validData.reduce((sum, row) => sum + parseFloat(row.avg_sentiment_score), 0) / validData.length || 0;
+        const avgEngagement = validData.reduce((sum, row) => sum + parseFloat(row.weighted_engagement_rate), 0) / validData.length || 0;
+        const reach = validData.reduce((sum, row) => sum + (parseFloat(row.weighted_engagement_rate) * 88000 || 0), 0);
+        const trend = avgSentiment - (await axios.get(`/api/data/${months[months.length - 2]}`)).data.split('\n').slice(1).map(line => {
+          const values = line.split(',').map(v => v.trim());
+          return headers.reduce((obj, header, i) => { obj[header] = values[i] || ''; return obj; }, {});
+        }).filter(row => row.post_id).reduce((sum, row) => sum + parseFloat(row.avg_sentiment_score), 0) / validData.length || 0;
+        const comments = validData.flatMap(row => [row.most_positive_comment, row.most_negative_comment, row.original_comment_for_context].filter(c => c));
+        const emojiCount = (comments.join('').match(/[\u{1F600}-\u{1F64F}]/gu) || []).length;
+        const topEmoji = emojiCount > 500 ? '😂' : '👍';
+        const health = avgSentiment > 0.2 ? 'Thriving' : avgSentiment < -0.3 ? 'At Risk' : 'Stable';
+        const insight = avgEngagement > 0.02 ? `Double down on ${validData[0].content_type}—they’re outpacing others 3:1` : 'Test new content types';
+        setOverview(`Campaign Pulse: **${health}** with a **+${avgSentiment.toFixed(2)} Sentiment Surge**, ${avgEngagement * 100}% engagement, and ${reach.toLocaleString()} reach—fueled by rural voices. Sentiment flipped **+${trend.toFixed(2)}** post-policy shift—why? Top emoji: **${topEmoji}** used ${emojiCount} times, signaling humor’s edge. ${insight}.`);
+      } catch (err) {
+        console.error('AI Overview Error:', err.message);
+        setOverview('Data unavailable. Check pipeline connection.');
+      }
+    };
+    generateOverview();
+  }, [dateRange]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="card mb-6 p-4"
+    >
+      <h3 className="text-xl font-orbitron mb-2">AI Campaign Health Overview</h3>
+      <p className="text-sm text-[#B0B0B0] whitespace-pre-wrap">{overview}</p>
+    </motion.div>
+  );
+};
+Replace the existing <AIOverview /> call with this updated version.
+2. Design Enhancements
+Use a monospace font (Roboto Mono) for the overview text to align with the futuristic theme, with bolded terms in a slightly lighter #CCCCCC for contrast.
+Add a hover effect to expand the text slightly, revealing a “Details” link to the Dashboard, enhancing interactivity.
+Ensure responsiveness, keeping the text block legible on mobile with a max-width.
+3. Testing & Validation
+Test with sample data (e.g., post_summary_2024-11.csv) to confirm the overview reflects accurate metrics and quirky insights.
+Verify the date slider updates the overview by adjusting ranges and checking sentiment/trend calculations.
+Solicit feedback from strategists—do the wild card stats (e.g., emoji use) and teasers (e.g., “why?”) spark interest? Adjust thresholds if needed.
+Why It’s Interesting
+Unexpected Insights: Rural voices, rogue threads, and emoji trends are unconventional metrics that stand out, making data feel alive.
+Questions: The “why?” teaser invites exploration, turning passive reading into active strategy.
+Humor & Edge: Highlighting emojis or sleeper hits adds a human, relatable twist to dry stats.
+This overview will hook users with its blend of hard data and intriguing hooks, setting the stage for deeper analysis. Ready to integrate this into the Cursor prompt—any specific metrics or twists you’d like to emphasize?
