@@ -59,19 +59,29 @@ export default function ExecutiveCockpit() {
       topPost,
       controversialPost,
       sentimentData: [
-        { name: 'Positive', value: positiveCount, color: '#10b981' },
-        { name: 'Neutral', value: neutralCount, color: '#6b7280' },
-        { name: 'Negative', value: negativeCount, color: '#ef4444' }
+        { name: 'Positive', value: positiveCount, color: '#00ff88', gradient: 'from-green-400 to-green-600' },
+        { name: 'Neutral', value: neutralCount, color: '#8b9dc3', gradient: 'from-blue-400 to-blue-600' },
+        { name: 'Negative', value: negativeCount, color: '#ff4757', gradient: 'from-red-400 to-red-600' }
       ]
     };
   }, [posts]);
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
+      const data = payload[0];
+      const percentage = ((data.value / metrics?.totalPosts) * 100).toFixed(1);
       return (
-        <div className="glass-morphism p-3 rounded-lg border border-obsidian-border">
-          <p className="text-white font-medium">{payload[0].name}</p>
-          <p className="text-electric-blue">Count: {payload[0].value}</p>
+        <div className="glass-morphism p-3 rounded-lg border border-electric-blue/30 shadow-lg">
+          <div className="flex items-center space-x-2">
+            <div 
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: data.payload.color }}
+            />
+            <p className="text-white font-medium">{data.name}</p>
+          </div>
+          <p className="text-electric-blue text-sm mt-1">
+            {data.value} posts ({percentage}%)
+          </p>
         </div>
       );
     }
@@ -153,24 +163,64 @@ export default function ExecutiveCockpit() {
           <h3 className="text-xl font-heading font-bold text-white mb-4">
             Sentiment Distribution
           </h3>
-          <div className="h-64">
+          <div className="h-64 relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={metrics.sentimentData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
+                  innerRadius={45}
+                  outerRadius={85}
+                  paddingAngle={4}
                   dataKey="value"
+                  stroke="#0a0a0a"
+                  strokeWidth={3}
+                  animationBegin={0}
+                  animationDuration={1000}
                 >
                   {metrics.sentimentData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color}
+                      style={{
+                        filter: `drop-shadow(0 0 15px ${entry.color}50)`,
+                        transition: 'all 0.3s ease'
+                      }}
+                      className="hover:opacity-90 cursor-pointer"
+                    />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
+            
+            {/* Center label */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white drop-shadow-lg">
+                  {metrics.totalPosts}
+                </div>
+                <div className="text-sm text-electric-blue font-medium">Total Posts</div>
+              </div>
+            </div>
+            
+            {/* Legend */}
+            <div className="absolute bottom-2 left-2 right-2 flex justify-center space-x-6">
+              {metrics.sentimentData.map((entry, index) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <div 
+                    className="w-4 h-4 rounded-full shadow-lg"
+                    style={{ 
+                      backgroundColor: entry.color,
+                      boxShadow: `0 0 8px ${entry.color}60`
+                    }}
+                  />
+                  <span className="text-sm text-gray-300 font-medium">{entry.name}</span>
+                  <span className="text-xs text-electric-blue">({entry.value})</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
