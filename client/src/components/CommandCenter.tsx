@@ -136,7 +136,7 @@ export default function CommandCenter() {
   };
 
   return (
-    <div className="flex-1 p-8 space-y-8">
+    <div className="min-h-screen p-8 space-y-8">
       {/* Header */}
       <motion.div
         className="command-header p-6 rounded-xl"

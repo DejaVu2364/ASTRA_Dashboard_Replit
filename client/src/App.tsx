@@ -8,18 +8,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./components/Login";
 import IntroScreen from "./components/IntroScreen";
-import Sidebar from "./components/Sidebar";
 import CommandCenter from "./components/CommandCenter";
-import DataExplorer from "./components/DataExplorer";
-import ChatWithAstra from "./components/ChatWithAstra";
-import InsightsChallenge from "./components/InsightsChallenge";
 import ParticleBackground from "./components/ParticleBackground";
 import NotFound from "@/pages/not-found";
 
 function AppContent() {
   const { isAuthenticated, isLoading, login } = useAuth();
   const [showIntro, setShowIntro] = useState(true);
-  const [activeRoute, setActiveRoute] = useState('command-center');
+
 
   if (isLoading) {
     return (
@@ -37,29 +33,10 @@ function AppContent() {
     setShowIntro(false);
   };
 
-  const handleNavigation = (route: string) => {
-    setActiveRoute(route);
-  };
+
 
   const renderContent = () => {
-    switch (activeRoute) {
-      case 'command-center':
-        return <CommandCenter />;
-      case 'data-explorer':
-        return <DataExplorer />;
-      case 'chat-astra':
-        return <ChatWithAstra />;
-      case 'insights-challenge':
-        return <InsightsChallenge />;
-      case 'narrative-scanner':
-        return <div className="flex-1 p-8 text-center text-gray-400">Narrative Scanner - Coming Soon</div>;
-      case 'opposition-watch':
-        return <div className="flex-1 p-8 text-center text-gray-400">Opposition Watch - Coming Soon</div>;
-      case 'predictive-analytics':
-        return <div className="flex-1 p-8 text-center text-gray-400">Predictive Analytics - Coming Soon</div>;
-      default:
-        return <CommandCenter />;
-    }
+    return <CommandCenter />;
   };
 
   return (
@@ -73,11 +50,7 @@ function AppContent() {
             onComplete={handleIntroComplete} 
           />
         ) : (
-          <div key="app" className="min-h-screen flex relative z-20">
-            <Sidebar 
-              activeRoute={activeRoute} 
-              onNavigate={handleNavigation} 
-            />
+          <div key="app" className="min-h-screen relative z-20">
             {renderContent()}
           </div>
         )}
