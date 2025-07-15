@@ -294,32 +294,7 @@ export default function ExecutiveCockpit() {
         </p>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-morphism p-6 rounded-xl">
-          <h3 className="text-lg font-bold text-white mb-2">Total Posts</h3>
-          <p className="text-2xl font-bold text-electric-blue">{metrics.totalPosts}</p>
-          <p className="text-sm text-gray-400">Content pieces</p>
-        </div>
-        <div className="glass-morphism p-6 rounded-xl">
-          <h3 className="text-lg font-bold text-white mb-2">Avg Sentiment</h3>
-          <p className={`text-2xl font-bold ${metrics.avgSentiment > 0.2 ? 'text-verified-green' : metrics.avgSentiment < -0.2 ? 'text-danger-red' : 'text-warning-amber'}`}>
-            {(metrics.avgSentiment * 100).toFixed(1)}%
-          </p>
-          <p className="text-sm text-gray-400">Public opinion</p>
-        </div>
-        <div className="glass-morphism p-6 rounded-xl">
-          <h3 className="text-lg font-bold text-white mb-2">Avg Engagement</h3>
-          <p className="text-2xl font-bold text-electric-blue">{(metrics.avgEngagement * 100).toFixed(2)}%</p>
-          <p className="text-sm text-gray-400">Interaction rate</p>
-        </div>
-        <div className="glass-morphism p-6 rounded-xl">
-          <h3 className="text-lg font-bold text-white mb-2">Total Reach</h3>
-          <p className="text-2xl font-bold text-electric-blue">{(metrics.totalComments * 35 + metrics.totalPosts * 850).toLocaleString()}</p>
-          <p className="text-sm text-gray-400">Est. impressions</p>
-        </div>
 
-      </div>
 
       {/* AI Campaign Health Overview */}
       <motion.div
