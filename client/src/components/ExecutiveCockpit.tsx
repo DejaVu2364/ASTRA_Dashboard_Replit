@@ -326,38 +326,105 @@ export default function ExecutiveCockpit() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="glass-morphism p-6 rounded-xl"
+        className="glass-morphism p-6 rounded-xl relative overflow-hidden"
       >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-heading font-bold text-white flex items-center">
-            <span className="w-2 h-2 bg-electric-blue rounded-full mr-3 animate-pulse"></span>
-            AI Campaign Health Overview
-          </h3>
-          <Badge variant="outline" className="border-electric-blue/30 text-electric-blue bg-electric-blue/10">
-            Live
-          </Badge>
-        </div>
+        {/* Background gradient effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-electric-blue/5 via-transparent to-verified-green/5 pointer-events-none"></div>
         
-        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50 mb-4">
-          <div className="text-sm text-gray-300 leading-relaxed">
-            {aiOverview.split('**').map((part, index) => 
-              index % 2 === 1 ? (
-                <span key={index} className="text-white font-bold">{part}</span>
-              ) : (
-                <span key={index} className="text-gray-300">{part}</span>
-              )
-            )}
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-electric-blue/20 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4 text-electric-blue" />
+              </div>
+              <div>
+                <h3 className="text-xl font-heading font-bold text-white">
+                  AI Campaign Health
+                </h3>
+                <p className="text-xs text-gray-400">Real-time intelligence</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-verified-green rounded-full animate-pulse"></div>
+              <span className="text-xs text-verified-green font-medium">ACTIVE</span>
+            </div>
           </div>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-1 h-1 bg-verified-green rounded-full animate-pulse"></div>
-            <span className="text-xs text-gray-400">Auto-generated • Updated live</span>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {/* Health Status Card */}
+            <div className="bg-gray-900/40 rounded-lg p-4 border border-gray-700/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-400 uppercase tracking-wide">Status</span>
+                <span className={`text-xs px-2 py-1 rounded ${
+                  metrics.avgSentiment > 0.2 ? 'bg-verified-green/20 text-verified-green' : 
+                  metrics.avgSentiment < -0.2 ? 'bg-danger-red/20 text-danger-red' : 
+                  'bg-warning-amber/20 text-warning-amber'
+                }`}>
+                  {metrics.avgSentiment > 0.2 ? 'Strong' : metrics.avgSentiment < -0.2 ? 'At Risk' : 'Stable'}
+                </span>
+              </div>
+              <div className="text-2xl font-bold text-white mb-1">
+                {(metrics.avgSentiment * 100).toFixed(1)}%
+              </div>
+              <div className="text-xs text-gray-400">Sentiment score</div>
+            </div>
+
+            {/* Engagement Card */}
+            <div className="bg-gray-900/40 rounded-lg p-4 border border-gray-700/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-400 uppercase tracking-wide">Engagement</span>
+                <TrendingUp className="w-3 h-3 text-electric-blue" />
+              </div>
+              <div className="text-2xl font-bold text-white mb-1">
+                {(metrics.avgEngagement * 100).toFixed(2)}%
+              </div>
+              <div className="text-xs text-gray-400">Interaction rate</div>
+            </div>
+
+            {/* Reach Card */}
+            <div className="bg-gray-900/40 rounded-lg p-4 border border-gray-700/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-gray-400 uppercase tracking-wide">Reach</span>
+                <Award className="w-3 h-3 text-verified-green" />
+              </div>
+              <div className="text-2xl font-bold text-white mb-1">
+                {((metrics.totalComments * 35 + metrics.totalPosts * 850) / 1000).toFixed(0)}K
+              </div>
+              <div className="text-xs text-gray-400">Est. impressions</div>
+            </div>
           </div>
-          <button className="text-xs text-electric-blue hover:text-white transition-colors px-3 py-1 rounded-md border border-electric-blue/30 hover:border-electric-blue hover:bg-electric-blue/10">
-            View Details →
-          </button>
+
+          {/* AI Insight */}
+          <div className="bg-gradient-to-r from-electric-blue/10 to-verified-green/10 rounded-lg p-4 border border-electric-blue/20">
+            <div className="flex items-start space-x-3">
+              <div className="w-6 h-6 bg-electric-blue/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-xs text-electric-blue font-bold">AI</span>
+              </div>
+              <div className="flex-1">
+                <div className="text-sm text-gray-300 leading-relaxed">
+                  {aiOverview.split('**').map((part, index) => 
+                    index % 2 === 1 ? (
+                      <span key={index} className="text-white font-semibold">{part}</span>
+                    ) : (
+                      <span key={index}>{part}</span>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Footer */}
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-700/30">
+            <div className="flex items-center space-x-2 text-xs text-gray-400">
+              <div className="w-1 h-1 bg-electric-blue rounded-full animate-pulse"></div>
+              <span>Updated {new Date().toLocaleTimeString()}</span>
+            </div>
+            <button className="text-xs text-electric-blue hover:text-white transition-colors flex items-center space-x-1">
+              <span>Explore insights</span>
+              <span>→</span>
+            </button>
+          </div>
         </div>
       </motion.div>
 
