@@ -326,23 +326,36 @@ export default function ExecutiveCockpit() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-[#1A1A1A] rounded-xl p-6 border border-gray-800 hover:border-electric-blue/30 transition-all duration-300 hover:shadow-lg hover:shadow-electric-blue/10"
+        className="glass-morphism p-6 rounded-xl"
       >
-        <h3 className="text-xl font-heading font-bold text-white mb-4">
-          AI Campaign Health Overview
-        </h3>
-        <div className="font-mono text-sm text-gray-300 leading-relaxed">
-          {aiOverview.split('**').map((part, index) => 
-            index % 2 === 1 ? (
-              <span key={index} className="text-[#CCCCCC] font-bold">{part}</span>
-            ) : (
-              <span key={index}>{part}</span>
-            )
-          )}
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-heading font-bold text-white flex items-center">
+            <span className="w-2 h-2 bg-electric-blue rounded-full mr-3 animate-pulse"></span>
+            AI Campaign Health Overview
+          </h3>
+          <Badge variant="outline" className="border-electric-blue/30 text-electric-blue">
+            Live
+          </Badge>
         </div>
-        <div className="mt-4 flex items-center justify-between">
-          <span className="text-xs text-[#B0B0B0]">Auto-generated • Updated live</span>
-          <button className="text-xs text-electric-blue hover:text-electric-blue/80 transition-colors">
+        
+        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50 mb-4">
+          <div className="font-mono text-sm text-gray-300 leading-relaxed">
+            {aiOverview.split('**').map((part, index) => 
+              index % 2 === 1 ? (
+                <span key={index} className="text-electric-blue font-bold">{part}</span>
+              ) : (
+                <span key={index}>{part}</span>
+              )
+            )}
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="w-1 h-1 bg-verified-green rounded-full animate-pulse"></div>
+            <span className="text-xs text-gray-400">Auto-generated • Updated live</span>
+          </div>
+          <button className="text-xs text-electric-blue hover:text-white transition-colors px-3 py-1 rounded-md border border-electric-blue/30 hover:border-electric-blue hover:bg-electric-blue/10">
             View Details →
           </button>
         </div>
