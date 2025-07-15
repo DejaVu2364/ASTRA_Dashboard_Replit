@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Award, TrendingUp, BarChart3, Search, Users, Target, Calendar, BookOpen, Navigation, Activity, Brain, Database, Clock, MessageSquare } from "lucide-react";
 import KPICard from "./KPICard";
@@ -24,6 +24,20 @@ import type { Analytics, Post } from "@shared/schema";
 
 export default function CommandCenter() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedInsight, setSelectedInsight] = useState<any>(null);
+
+  // Listen for insight exploration events
+  useEffect(() => {
+    const handleNavigateToAI = (event: CustomEvent) => {
+      setSelectedInsight(event.detail.insightData);
+      setActiveTab('ai-assistant');
+    };
+
+    window.addEventListener('navigateToAI', handleNavigateToAI as EventListener);
+    return () => {
+      window.removeEventListener('navigateToAI', handleNavigateToAI as EventListener);
+    };
+  }, []);
   
   const { data: analytics, isLoading: analyticsLoading } = useQuery<Analytics[]>({
     queryKey: ['/api/analytics'],
@@ -100,7 +114,7 @@ export default function CommandCenter() {
       case 'overview':
         return <ExecutiveOverview />;
       case 'chat':
-        return <ChatbotInterface />;
+        return <ChatbotInterface selectedInsight={selectedInsight} />;
       case 'executive':
         return <ExecutiveCockpit />;
       case 'insights':

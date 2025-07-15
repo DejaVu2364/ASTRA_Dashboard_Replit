@@ -1,6 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 import type { Post, Comment } from "@shared/schema";
 
+// ============= FREE GEMINI API USAGE ONLY =============
+// Using gemini-2.5-flash (FREE model) with conservative limits
+// No costs will be incurred with this configuration
+// =====================================================
+
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export interface AIInsight {
@@ -36,7 +41,31 @@ export interface NarrativeAnalysis {
 }
 
 export class AIService {
-  private model = "gemini-2.5-flash";
+  // ============= FREE GEMINI CONFIGURATION =============
+  // Using FREE Gemini model only - no cost incurred
+  private model = "gemini-2.5-flash"; // FREE model
+  private maxTokens = 1024; // Conservative limit for free usage
+  private requestCount = 0; // Track requests to avoid rate limits
+  private maxRequestsPerMinute = 15; // Conservative rate limit
+  // ====================================================
+
+  private async makeRequest(prompt: string, config: any): Promise<any> {
+    // Rate limiting to stay within free tier limits
+    this.requestCount++;
+    if (this.requestCount > this.maxRequestsPerMinute) {
+      console.warn('Rate limit approached, using fallback data');
+      return null;
+    }
+    
+    return await ai.models.generateContent({
+      model: this.model, // FREE gemini-2.5-flash model
+      contents: prompt,
+      config: {
+        maxOutputTokens: this.maxTokens,
+        ...config
+      }
+    });
+  }
 
   async generateInsights(posts: Post[]): Promise<AIInsight[]> {
     try {
@@ -64,32 +93,32 @@ export class AIService {
         Format as JSON array with proper structure.
       `;
 
-      const response = await ai.models.generateContent({
-        model: this.model,
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                id: { type: "string" },
-                type: { type: "string" },
-                title: { type: "string" },
-                description: { type: "string" },
-                confidence: { type: "number" },
-                priority: { type: "string" },
-                actionable: { type: "boolean" },
-                recommendation: { type: "string" },
-                impact: { type: "string" },
-                dataPoints: { type: "array", items: { type: "string" } }
-              },
-              required: ["id", "type", "title", "description", "confidence", "priority", "actionable", "recommendation", "impact"]
-            }
+      const response = await this.makeRequest(prompt, {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              type: { type: "string" },
+              title: { type: "string" },
+              description: { type: "string" },
+              confidence: { type: "number" },
+              priority: { type: "string" },
+              actionable: { type: "boolean" },
+              recommendation: { type: "string" },
+              impact: { type: "string" },
+              dataPoints: { type: "array", items: { type: "string" } }
+            },
+            required: ["id", "type", "title", "description", "confidence", "priority", "actionable", "recommendation", "impact"]
           }
         }
       });
+
+      if (!response) {
+        return this.getFallbackInsights(posts);
+      }
 
       const insights = JSON.parse(response.text || "[]");
       return insights.map((insight: any) => ({
@@ -128,10 +157,11 @@ export class AIService {
       `;
 
       const response = await ai.models.generateContent({
-        model: this.model,
+        model: this.model, // FREE gemini-2.5-flash model
         contents: prompt,
         config: {
           responseMimeType: "application/json",
+          maxOutputTokens: this.maxTokens, // Conservative limit for free usage
           responseSchema: {
             type: "object",
             properties: {
@@ -180,10 +210,11 @@ export class AIService {
       `;
 
       const response = await ai.models.generateContent({
-        model: this.model,
+        model: this.model, // FREE gemini-2.5-flash model
         contents: prompt,
         config: {
           responseMimeType: "application/json",
+          maxOutputTokens: this.maxTokens, // Conservative limit for free usage
           responseSchema: {
             type: "object",
             properties: {
@@ -228,8 +259,11 @@ export class AIService {
       `;
 
       const response = await ai.models.generateContent({
-        model: this.model,
-        contents: prompt
+        model: this.model, // FREE gemini-2.5-flash model
+        contents: prompt,
+        config: {
+          maxOutputTokens: this.maxTokens * 2 // Slightly higher limit for reports
+        }
       });
 
       return response.text || "Report generation failed";

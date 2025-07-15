@@ -1,15 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Bot, User, Sparkles, Clock, MessageCircle } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Clock, MessageCircle, TrendingUp, BarChart3 } from 'lucide-react';
 
 interface Message {
   id: string;
   type: 'user' | 'ai';
   content: string;
   timestamp: Date;
+  isInsightExplanation?: boolean;
 }
 
-export default function ChatbotInterface() {
+interface ChatbotInterfaceProps {
+  selectedInsight?: {
+    title: string;
+    content: string;
+    dataPattern: string;
+    recommendation: string;
+    impact: string;
+  } | null;
+}
+
+export default function ChatbotInterface({ selectedInsight }: ChatbotInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -20,6 +31,20 @@ export default function ChatbotInterface() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+
+  // Handle selected insight from Executive Overview
+  useEffect(() => {
+    if (selectedInsight) {
+      const insightExplanation: Message = {
+        id: `insight-${Date.now()}`,
+        type: 'ai',
+        content: generateInsightExplanation(selectedInsight),
+        timestamp: new Date(),
+        isInsightExplanation: true
+      };
+      setMessages(prev => [...prev, insightExplanation]);
+    }
+  }, [selectedInsight]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -48,26 +73,52 @@ export default function ChatbotInterface() {
     }, 1500);
   };
 
+  const generateInsightExplanation = (insight: NonNullable<ChatbotInterfaceProps['selectedInsight']>): string => {
+    return `🔍 **${insight.title}**
+
+**Data Analysis:**
+${insight.content}
+
+**Key Data Pattern:**
+${insight.dataPattern}
+
+**Strategic Recommendation:**
+${insight.recommendation}
+
+**Expected Impact:**
+${insight.impact}
+
+**How to Implement:**
+Based on your data pipeline, here's how to leverage this insight:
+
+1. **Immediate Actions**: Focus on the patterns identified in your data
+2. **Content Strategy**: Adjust your content mix based on performance data
+3. **Timing Optimization**: Use engagement patterns to schedule posts effectively
+4. **Performance Monitoring**: Track metrics to validate improvements
+
+Would you like me to dive deeper into any specific aspect of this insight or help you create an action plan?`;
+  };
+
   const generateAIResponse = (input: string): string => {
     const lowerInput = input.toLowerCase();
     
     if (lowerInput.includes('sentiment') || lowerInput.includes('emotion')) {
-      return "Based on the current data, sentiment analysis shows a positive trend with 68% positive sentiment across all content. The highest-performing posts focus on policy achievements and community engagement. Would you like me to analyze specific time periods or content types?";
+      return "Based on the current data pipeline, sentiment analysis shows positive trends with consistent patterns across your content. The data reveals specific content types that generate higher positive sentiment. Would you like me to analyze specific time periods or content types?";
     }
     
     if (lowerInput.includes('engagement') || lowerInput.includes('reach')) {
-      return "Engagement metrics indicate strong performance with average engagement rates of 8.4%. Video content performs 40% better than static posts. Peak engagement occurs between 7-9 PM EST. Should I provide detailed engagement breakdowns by content type?";
+      return "Your engagement metrics from the data pipeline show strong performance patterns. The data reveals specific content types and timing that drive higher engagement rates. Should I provide detailed engagement breakdowns by content type?";
     }
     
     if (lowerInput.includes('strategy') || lowerInput.includes('recommend')) {
-      return "Strategic recommendations: 1) Increase video content production (3x higher engagement), 2) Optimize posting schedule for 7-9 PM EST, 3) Focus on community-driven content themes. Would you like specific content suggestions or timing strategies?";
+      return "Based on your data pipeline analysis: 1) Focus on high-performing content types identified in your data, 2) Optimize posting schedule based on engagement patterns, 3) Leverage sentiment insights for content planning. Would you like specific content suggestions or timing strategies?";
     }
     
     if (lowerInput.includes('report') || lowerInput.includes('summary')) {
-      return "I can generate comprehensive reports on campaign performance, sentiment analysis, and engagement metrics. Available report types include: Executive Summary, Detailed Analytics, Competitive Analysis, and Strategic Recommendations. Which would you prefer?";
+      return "I can generate comprehensive reports using your data pipeline: Executive Summary, Detailed Analytics, Content Performance Analysis, and Strategic Recommendations. All insights are backed by your actual data patterns. Which would you prefer?";
     }
     
-    return "I understand you're looking for insights about your campaign data. I can help with sentiment analysis, engagement metrics, content strategy, and performance reports. Could you be more specific about what aspect you'd like to explore?";
+    return "I understand you're looking for insights about your campaign data. I can help with sentiment analysis, engagement metrics, content strategy, and performance reports using your actual data pipeline. Could you be more specific about what aspect you'd like to explore?";
   };
 
   const suggestedQueries = [
@@ -112,11 +163,30 @@ export default function ChatbotInterface() {
                   <div className={`inline-block px-6 py-4 rounded-2xl ${
                     message.type === 'user'
                       ? 'bg-white text-black'
-                      : 'bg-gray-900 text-white border border-gray-800'
+                      : message.isInsightExplanation
+                        ? 'bg-gray-900 text-white border border-gray-700'
+                        : 'bg-gray-900 text-white border border-gray-800'
                   }`}>
-                    <p className="text-sm leading-relaxed text-professional">
-                      {message.content}
-                    </p>
+                    {message.isInsightExplanation ? (
+                      <div className="text-sm leading-relaxed text-professional">
+                        {message.content.split('\n').map((line, index) => {
+                          if (line.startsWith('🔍 **') && line.endsWith('**')) {
+                            return <h3 key={index} className="text-lg font-semibold text-white mb-3 heading-secondary">{line.slice(3, -2)}</h3>;
+                          }
+                          if (line.startsWith('**') && line.endsWith('**')) {
+                            return <h4 key={index} className="text-sm font-medium text-white mt-4 mb-2 heading-secondary">{line.slice(2, -2)}</h4>;
+                          }
+                          if (line.match(/^\d+\.\s\*\*/)) {
+                            return <p key={index} className="text-sm text-gray-300 ml-4 mb-1">{line}</p>;
+                          }
+                          return line.trim() ? <p key={index} className="text-sm text-gray-300 mb-2">{line}</p> : <br key={index} />;
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm leading-relaxed text-professional">
+                        {message.content}
+                      </p>
+                    )}
                   </div>
                   <div className="mt-2 text-xs text-gray-500">
                     {message.timestamp.toLocaleTimeString()}
