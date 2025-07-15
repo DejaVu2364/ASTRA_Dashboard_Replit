@@ -87,8 +87,11 @@ export default function CommandCenter() {
     { id: 'chat', label: 'AI Assistant', icon: MessageSquare },
     { id: 'executive', label: 'Campaign Health', icon: Activity },
     { id: 'insights', label: 'AI Insights Hub', icon: Brain },
+    { id: 'narrative', label: 'Narrative Navigator', icon: Navigation },
+    { id: 'engagement', label: 'Engagement Analytics', icon: TrendingUp },
     { id: 'strategy', label: 'Content Strategy', icon: Target },
     { id: 'discovery', label: 'Data Explorer', icon: Database },
+    { id: 'trends', label: 'Performance Trends', icon: BarChart3 },
     { id: 'briefing', label: 'AI Reports', icon: BookOpen },
   ];
 
@@ -102,6 +105,10 @@ export default function CommandCenter() {
         return <ExecutiveCockpit />;
       case 'insights':
         return <AIInsightsHub />;
+      case 'narrative':
+        return <NarrativeNavigator />;
+      case 'engagement':
+        return <EngagementAnalytics />;
       case 'strategy':
         return (
           <div className="space-y-8">
@@ -119,6 +126,14 @@ export default function CommandCenter() {
             <DataDiscoveryZone />
             <DataExplorer />
             <IntelligenceSearch />
+          </div>
+        );
+      case 'trends':
+        return (
+          <div className="space-y-8">
+            <PerformanceTrends />
+            <MultiMonthSentimentTrend />
+            <PeriodComparison />
           </div>
         );
       case 'briefing':
