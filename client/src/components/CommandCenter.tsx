@@ -82,17 +82,12 @@ export default function CommandCenter() {
 
   const tabs = [
     { id: 'executive', label: 'Executive Overview', icon: Award },
-    { id: 'trends', label: 'Performance Trends', icon: TrendingUp },
+    { id: 'insights', label: 'AI Insights Hub', icon: Brain },
     { id: 'narrative', label: 'Narrative Navigator', icon: Navigation },
     { id: 'engagement', label: 'Engagement Analytics', icon: Activity },
-    { id: 'insights', label: 'AI Insights Hub', icon: Brain },
-    { id: 'discovery', label: 'Data Discovery Zone', icon: Database },
-    { id: 'sentiment', label: 'Multi-Month Sentiment', icon: Clock },
-    { id: 'strategy', label: 'Content Strategy', icon: Target },
-    { id: 'comparison', label: 'Period Comparison', icon: Calendar },
-    { id: 'analysis', label: 'Content Analysis', icon: BarChart3 },
-    { id: 'explorer', label: 'Data Explorer', icon: Search },
-    { id: 'intelligence', label: 'Intelligence Search', icon: Users },
+    { id: 'strategy', label: 'Content Strategy & Analysis', icon: Target },
+    { id: 'discovery', label: 'Data Discovery & Explorer', icon: Database },
+    { id: 'trends', label: 'Performance & Sentiment Trends', icon: TrendingUp },
     { id: 'briefing', label: 'AI Briefing Library', icon: BookOpen },
   ];
 
@@ -100,37 +95,16 @@ export default function CommandCenter() {
     switch (activeTab) {
       case 'executive':
         return <ExecutiveCockpit />;
-      case 'trends':
-        return <PerformanceTrends />;
+      case 'insights':
+        return <AIInsightsHub />;
       case 'narrative':
         return <NarrativeNavigator />;
       case 'engagement':
         return <EngagementAnalytics />;
-      case 'insights':
-        return <AIInsightsHub />;
-      case 'discovery':
-        return <DataDiscoveryZone />;
-      case 'sentiment':
-        return <MultiMonthSentimentTrend />;
       case 'strategy':
-        return <ContentStrategy />;
-      case 'comparison':
-        return <PeriodComparison />;
-      case 'analysis':
         return (
           <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {kpiData.map((kpi, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.1 + index * 0.1 }}
-                >
-                  <KPICard {...kpi} />
-                </motion.div>
-              ))}
-            </div>
+            <ContentStrategy />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <TopicChart />
               <SentimentChart />
@@ -138,10 +112,22 @@ export default function CommandCenter() {
             <PostTable />
           </div>
         );
-      case 'explorer':
-        return <DataExplorer />;
-      case 'intelligence':
-        return <IntelligenceSearch />;
+      case 'discovery':
+        return (
+          <div className="space-y-8">
+            <DataDiscoveryZone />
+            <DataExplorer />
+            <IntelligenceSearch />
+          </div>
+        );
+      case 'trends':
+        return (
+          <div className="space-y-8">
+            <PerformanceTrends />
+            <MultiMonthSentimentTrend />
+            <PeriodComparison />
+          </div>
+        );
       case 'briefing':
         return <AIBriefingLibrary />;
       default:

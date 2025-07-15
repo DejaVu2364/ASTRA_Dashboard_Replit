@@ -103,7 +103,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 bg-obsidian-surface/50 border border-electric-blue/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:border-electric-blue/50 transition-colors"
+                className="w-full px-4 py-3 bg-gray-900/80 border border-electric-blue/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:border-electric-blue focus:bg-gray-800/90 transition-colors"
                 placeholder="Enter your username"
                 required
               />
@@ -123,7 +123,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-obsidian-surface/50 border border-electric-blue/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:border-electric-blue/50 transition-colors pr-12"
+                  className="w-full px-4 py-3 bg-gray-900/80 border border-electric-blue/30 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-electric-blue/50 focus:border-electric-blue focus:bg-gray-800/90 transition-colors pr-12"
                   placeholder="Enter your password"
                   required
                 />
