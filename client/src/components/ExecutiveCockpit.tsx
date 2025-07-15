@@ -286,12 +286,21 @@ export default function ExecutiveCockpit() {
   return (
     <div className="space-y-8">
       <div className="command-header p-6 rounded-xl">
-        <h2 className="text-3xl font-heading font-bold text-white mb-2">
-          Executive Performance Snapshot
-        </h2>
-        <p className="text-gray-400">
-          AI-powered intelligence overview with strategic insights
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-heading font-bold text-white mb-2">
+              Executive Performance Snapshot
+            </h2>
+            <p className="text-gray-400">
+              AI-powered intelligence overview with strategic insights
+            </p>
+          </div>
+          {/* Cognitive Load Indicator */}
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-verified-green rounded-full animate-pulse"></div>
+            <span className="text-xs text-verified-green font-medium">OPTIMIZED</span>
+          </div>
+        </div>
       </div>
 
 
@@ -326,11 +335,15 @@ export default function ExecutiveCockpit() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {/* Health Status Card */}
-            <div className="bg-gray-900/40 rounded-lg p-4 border border-gray-700/30">
+            {/* Health Status Card with Progressive Disclosure */}
+            <motion.div 
+              className="bg-gray-900/40 rounded-lg p-4 border border-gray-700/30 hover:border-gray-600/50 transition-all duration-200 cursor-pointer group"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-gray-400 uppercase tracking-wide">Status</span>
-                <span className={`text-xs px-2 py-1 rounded ${
+                <span className={`text-xs px-2 py-1 rounded transition-all ${
                   metrics.avgSentiment > 0.2 ? 'bg-verified-green/20 text-verified-green' : 
                   metrics.avgSentiment < -0.2 ? 'bg-danger-red/20 text-danger-red' : 
                   'bg-warning-amber/20 text-warning-amber'
@@ -342,10 +355,18 @@ export default function ExecutiveCockpit() {
                 {(metrics.avgSentiment * 100).toFixed(1)}%
               </div>
               <div className="text-xs text-gray-400">Sentiment score</div>
-            </div>
+              {/* Progressive disclosure hint */}
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-electric-blue mt-1">
+                Click for details →
+              </div>
+            </motion.div>
 
-            {/* Engagement Card */}
-            <div className="bg-gray-900/40 rounded-lg p-4 border border-gray-700/30">
+            {/* Engagement Card with Chunked Information */}
+            <motion.div 
+              className="bg-gray-900/40 rounded-lg p-4 border border-gray-700/30 hover:border-gray-600/50 transition-all duration-200 cursor-pointer group"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-gray-400 uppercase tracking-wide">Engagement</span>
                 <TrendingUp className="w-3 h-3 text-electric-blue" />
@@ -354,10 +375,24 @@ export default function ExecutiveCockpit() {
                 {(metrics.avgEngagement * 100).toFixed(2)}%
               </div>
               <div className="text-xs text-gray-400">Interaction rate</div>
-            </div>
+              {/* Performance indicator */}
+              <div className="flex items-center mt-2">
+                <div className={`w-2 h-1 rounded-full mr-1 ${
+                  metrics.avgEngagement > 0.02 ? 'bg-verified-green' : 
+                  metrics.avgEngagement > 0.01 ? 'bg-warning-amber' : 'bg-gray-500'
+                }`}></div>
+                <span className="text-xs text-gray-400">
+                  {metrics.avgEngagement > 0.02 ? 'Excellent' : metrics.avgEngagement > 0.01 ? 'Good' : 'Needs attention'}
+                </span>
+              </div>
+            </motion.div>
 
-            {/* Reach Card */}
-            <div className="bg-gray-900/40 rounded-lg p-4 border border-gray-700/30">
+            {/* Reach Card with Contextual Information */}
+            <motion.div 
+              className="bg-gray-900/40 rounded-lg p-4 border border-gray-700/30 hover:border-gray-600/50 transition-all duration-200 cursor-pointer group"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-gray-400 uppercase tracking-wide">Reach</span>
                 <Award className="w-3 h-3 text-verified-green" />
@@ -366,28 +401,51 @@ export default function ExecutiveCockpit() {
                 {((metrics.totalComments * 35 + metrics.totalPosts * 850) / 1000000).toFixed(2)}M
               </div>
               <div className="text-xs text-gray-400">Est. impressions</div>
-            </div>
+              {/* Reach breakdown */}
+              <div className="text-xs text-gray-500 mt-1">
+                {metrics.totalPosts} posts • {metrics.totalComments} comments
+              </div>
+            </motion.div>
           </div>
 
-          {/* AI Insight */}
-          <div className="bg-gradient-to-r from-electric-blue/10 to-verified-green/10 rounded-lg p-4 border border-electric-blue/20">
+          {/* AI Insight with Cognitive Load Reduction */}
+          <motion.div 
+            className="bg-gradient-to-r from-electric-blue/10 to-verified-green/10 rounded-lg p-4 border border-electric-blue/20"
+            initial={{ opacity: 0.8 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
             <div className="flex items-start space-x-3">
               <div className="w-6 h-6 bg-electric-blue/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                 <span className="text-xs text-electric-blue font-bold">AI</span>
               </div>
               <div className="flex-1">
+                {/* Scannable format with bullet points for easier consumption */}
                 <div className="text-sm text-gray-300 leading-relaxed">
                   {aiOverview.split('**').map((part, index) => 
                     index % 2 === 1 ? (
-                      <span key={index} className="text-white font-semibold">{part}</span>
+                      <span key={index} className="text-white font-semibold bg-electric-blue/5 px-1 rounded">{part}</span>
                     ) : (
                       <span key={index}>{part}</span>
                     )
                   )}
                 </div>
+                
+                {/* Quick action buttons for reduced decision fatigue */}
+                <div className="flex items-center space-x-2 mt-3">
+                  <button className="text-xs text-electric-blue hover:text-white transition-colors bg-electric-blue/10 px-2 py-1 rounded">
+                    Deep Dive
+                  </button>
+                  <button className="text-xs text-gray-400 hover:text-white transition-colors">
+                    Share Report
+                  </button>
+                  <button className="text-xs text-gray-400 hover:text-white transition-colors">
+                    Set Alert
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Action Footer */}
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-700/30">
@@ -524,57 +582,109 @@ export default function ExecutiveCockpit() {
           </div>
         </div>
 
-        {/* Performance Insights */}
-        <div className="glass-morphism p-6 rounded-xl">
-          <h3 className="text-xl font-heading font-bold text-white mb-4">
-            Performance Insights
-          </h3>
+        {/* Performance Insights with Cognitive Load Reduction */}
+        <motion.div 
+          className="glass-morphism p-6 rounded-xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-heading font-bold text-white">
+              Performance Insights
+            </h3>
+            {/* Information hierarchy indicator */}
+            <div className="flex items-center space-x-1">
+              <div className="w-1 h-1 bg-electric-blue rounded-full"></div>
+              <div className="w-1 h-1 bg-electric-blue/60 rounded-full"></div>
+              <div className="w-1 h-1 bg-electric-blue/30 rounded-full"></div>
+              <span className="text-xs text-gray-400 ml-2">Prioritized</span>
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Content Performance */}
-            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50">
+            {/* Content Performance with Visual Hierarchy */}
+            <motion.div 
+              className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50 hover:border-electric-blue/30 transition-all duration-200"
+              whileHover={{ y: -2 }}
+            >
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-semibold text-white">Content Analysis</h4>
                 <TrendingUp className="w-4 h-4 text-electric-blue" />
               </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">Avg. Comments/Post</span>
-                  <span className="text-white">{(metrics.totalComments / metrics.totalPosts).toFixed(1)}</span>
+              <div className="space-y-3">
+                {/* Primary metric - most important */}
+                <div className="flex justify-between items-center p-2 bg-electric-blue/5 rounded border-l-2 border-electric-blue">
+                  <span className="text-xs text-gray-300 font-medium">Avg. Comments/Post</span>
+                  <span className="text-sm font-bold text-white">{(metrics.totalComments / metrics.totalPosts).toFixed(1)}</span>
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">High Engagement Posts</span>
-                  <span className="text-white">{posts.filter(p => parseFloat(p.weightedEngagementRate || '0') > 0.02).length}</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">Positive Sentiment</span>
-                  <span className="text-verified-green">{posts.filter(p => parseFloat(p.avgSentimentScore || '0') > 0.2).length}</span>
+                
+                {/* Secondary metrics - grouped for scanning */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400">High Engagement Posts</span>
+                    <span className="text-white">{posts.filter(p => parseFloat(p.weightedEngagementRate || '0') > 0.02).length}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400">Positive Sentiment</span>
+                    <span className="text-verified-green">{posts.filter(p => parseFloat(p.avgSentimentScore || '0') > 0.2).length}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Audience Engagement */}
-            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50">
+            {/* Audience Engagement with Context */}
+            <motion.div 
+              className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50 hover:border-verified-green/30 transition-all duration-200"
+              whileHover={{ y: -2 }}
+            >
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-semibold text-white">Audience Insights</h4>
                 <Award className="w-4 h-4 text-verified-green" />
               </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">Total Interactions</span>
-                  <span className="text-white">{metrics.totalComments.toLocaleString()}</span>
+              <div className="space-y-3">
+                {/* Primary metric with context */}
+                <div className="flex justify-between items-center p-2 bg-verified-green/5 rounded border-l-2 border-verified-green">
+                  <span className="text-xs text-gray-300 font-medium">Total Interactions</span>
+                  <span className="text-sm font-bold text-white">{metrics.totalComments.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">Engagement Rate</span>
-                  <span className="text-electric-blue">{(metrics.avgEngagement * 100).toFixed(2)}%</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-400">Reach/Post</span>
-                  <span className="text-white">{((metrics.totalComments * 35 + metrics.totalPosts * 850) / metrics.totalPosts / 1000).toFixed(0)}K</span>
+                
+                {/* Secondary metrics with performance indicators */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-gray-400">Engagement Rate</span>
+                    <div className="flex items-center space-x-1">
+                      <span className="text-electric-blue">{(metrics.avgEngagement * 100).toFixed(2)}%</span>
+                      <div className={`w-2 h-2 rounded-full ${
+                        metrics.avgEngagement > 0.02 ? 'bg-verified-green' : 'bg-warning-amber'
+                      }`}></div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-gray-400">Reach/Post</span>
+                    <span className="text-white">{((metrics.totalComments * 35 + metrics.totalPosts * 850) / metrics.totalPosts / 1000).toFixed(0)}K</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+          
+          {/* Quick insights summary for cognitive ease */}
+          <div className="mt-4 p-3 bg-gray-900/30 rounded-lg border border-gray-700/30">
+            <div className="flex items-center space-x-2 mb-2">
+              <div className="w-3 h-3 bg-electric-blue/20 rounded-full flex items-center justify-center">
+                <span className="text-xs text-electric-blue">!</span>
+              </div>
+              <span className="text-xs text-gray-400 uppercase tracking-wide">Key Takeaway</span>
+            </div>
+            <p className="text-sm text-gray-300">
+              Your content is generating <span className="text-white font-semibold">{(metrics.totalComments / metrics.totalPosts).toFixed(1)} comments per post</span> with{' '}
+              <span className={`font-semibold ${metrics.avgEngagement > 0.02 ? 'text-verified-green' : 'text-warning-amber'}`}>
+                {metrics.avgEngagement > 0.02 ? 'strong' : 'moderate'}
+              </span> engagement rates.
+            </p>
+          </div>
+        </motion.div>
       </div>
     </div>
   );
