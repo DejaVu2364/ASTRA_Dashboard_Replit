@@ -116,11 +116,11 @@ function loadEnrichedComments() {
       const month = monthMatch ? monthMatch[1] : "unknown";
       
       rows.forEach((row, index) => {
-        if (row.text_for_analysis && row.text_for_analysis.trim() !== "") {
+        if (row.text_for_analysis && String(row.text_for_analysis).trim() !== "") {
           allComments.push({
             id: allComments.length + index + 1,
             postId: parseInt(row.post_id) || 0,
-            content: row.text_for_analysis || "",
+            content: String(row.text_for_analysis || ""),
             originalContent: row.original_comment_for_context || "",
             language: row.original_language || "unknown",
             sentiment: row.sentiment_score || 0,
@@ -230,7 +230,7 @@ const authenticateToken = (req: any, res: any, next: any) => {
   });
 };
 
-let streamingServer: StreamingServer | null = null;
+// Focus on pipeline data integration
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check

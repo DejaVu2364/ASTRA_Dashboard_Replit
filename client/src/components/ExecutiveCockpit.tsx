@@ -71,7 +71,7 @@ export default function ExecutiveCockpit() {
           Executive Performance Snapshot
         </h2>
         <p className="text-gray-400">
-          Real-time intelligence overview with strategic insights
+          AI-powered intelligence overview with strategic insights
         </p>
       </div>
 

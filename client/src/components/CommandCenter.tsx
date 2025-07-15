@@ -148,7 +148,7 @@ export default function CommandCenter() {
           Astra Intelligence Command Center
         </h2>
         <p className="text-gray-400">
-          Comprehensive political intelligence platform with real-time analytics
+          Comprehensive political intelligence platform with AI-powered analytics
         </p>
       </motion.div>
 
