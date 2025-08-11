@@ -407,7 +407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI-powered insights and analysis routes
   app.get("/api/ai-insights", async (req, res) => {
     try {
-      const posts = await storage.getAllPosts();
+      const posts = loadPostSummaries(); // Use file-based data
       const insights = await aiService.generateInsights(posts);
       res.json(insights);
     } catch (error) {
@@ -429,7 +429,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/ai-narrative-analysis", async (req, res) => {
     try {
-      const posts = await storage.getAllPosts();
+      const posts = loadPostSummaries(); // Use file-based data
       const narrativeAnalysis = await aiService.generateNarrativeAnalysis(posts);
       res.json(narrativeAnalysis);
     } catch (error) {
@@ -441,12 +441,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/ai-strategic-report", async (req, res) => {
     try {
       const { timeframe } = req.body;
-      const posts = await storage.getAllPosts();
+      const posts = loadPostSummaries(); // Use file-based data
       const report = await aiService.generateStrategicReport(posts, timeframe || 'current month');
       res.json({ report });
     } catch (error) {
       console.error('Error generating strategic report:', error);
       res.status(500).json({ error: "Failed to generate strategic report" });
+    }
+  });
+
+  // New endpoint for controversy detection
+  app.get("/api/controversial-posts", (req, res) => {
+    try {
+      const posts = loadPostSummaries();
+      const controversialPosts = posts
+        .sort((a, b) => b.sentimentVariance - a.sentimentVariance)
+        .slice(0, 10); // Return top 10 most controversial posts
+      res.json(controversialPosts);
+    } catch (error) {
+      console.error("Error fetching controversial posts:", error);
+      res.status(500).json({ error: "Failed to fetch controversial posts" });
+    }
+  });
+
+  // New endpoint for topic & sentiment trend analysis
+  app.get("/api/topic-trends", (req, res) => {
+    try {
+      const posts = loadPostSummaries();
+
+      const trends = posts.reduce((acc, post) => {
+        const topic = post.mainTopic || "Unknown";
+        const month = post.analysisMonth;
+
+        if (!acc[topic]) {
+          acc[topic] = {};
+        }
+        if (!acc[topic][month]) {
+          acc[topic][month] = {
+            totalEngagement: 0,
+            sentimentSum: 0,
+            count: 0,
+          };
+        }
+
+        acc[topic][month].totalEngagement += post.totalLikes + post.numShares + post.commentCount;
+        acc[topic][month].sentimentSum += post.avgSentimentScore;
+        acc[topic][month].count += 1;
+
+        return acc;
+      }, {});
+
+      const formattedTrends = Object.keys(trends).map(topic => {
+        const monthlyData = Object.keys(trends[topic]).map(month => {
+          const data = trends[topic][month];
+          return {
+            month,
+            avgSentiment: data.sentimentSum / data.count,
+            totalEngagement: data.totalEngagement
+          };
+        }).sort((a, b) => a.month.localeCompare(b.month));
+
+        return { topic, data: monthlyData };
+      });
+
+      res.json(formattedTrends);
+    } catch (error) {
+      console.error("Error fetching topic trends:", error);
+      res.status(500).json({ error: "Failed to fetch topic trends" });
     }
   });
 

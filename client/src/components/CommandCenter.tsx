@@ -20,6 +20,8 @@ import EngagementAnalytics from "./EngagementAnalytics";
 import AIInsightsHub from "./AIInsightsHub";
 import DataDiscoveryZone from "./DataDiscoveryZone";
 import MultiMonthSentimentTrend from "./MultiMonthSentimentTrend";
+import ControversyAlerts from "./ControversyAlerts";
+import TopicTrendChart from "./TopicTrendChart";
 import type { Analytics, Post } from "@shared/schema";
 
 export default function CommandCenter() {
@@ -122,7 +124,12 @@ export default function CommandCenter() {
       case 'narrative':
         return <NarrativeNavigator />;
       case 'engagement':
-        return <EngagementAnalytics />;
+        return (
+          <div className="space-y-8">
+            <ControversyAlerts />
+            <EngagementAnalytics />
+          </div>
+        );
       case 'strategy':
         return (
           <div className="space-y-8">
@@ -145,6 +152,7 @@ export default function CommandCenter() {
       case 'trends':
         return (
           <div className="space-y-8">
+            <TopicTrendChart />
             <PerformanceTrends />
             <MultiMonthSentimentTrend />
             <PeriodComparison />

@@ -1,0 +1,6 @@
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.js
+
+GEMINI_API_KEY not found. AI features will be disabled.
+5:49:39 PM [express] serving on port 5000

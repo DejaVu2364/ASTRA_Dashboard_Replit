@@ -6,7 +6,12 @@ import type { Post, Comment } from "@shared/schema";
 // No costs will be incurred with this configuration
 // =====================================================
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+let ai: GoogleGenAI | null = null;
+if (process.env.GEMINI_API_KEY) {
+  ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+} else {
+  console.warn("GEMINI_API_KEY not found. AI features will be disabled.");
+}
 
 export interface AIInsight {
   id: string;
@@ -50,6 +55,10 @@ export class AIService {
   // ====================================================
 
   private async makeRequest(prompt: string, config: any): Promise<any> {
+    if (!ai) {
+      console.warn('GEMINI_API_KEY not set, returning fallback data.');
+      return null;
+    }
     // Rate limiting to stay within free tier limits
     this.requestCount++;
     if (this.requestCount > this.maxRequestsPerMinute) {
@@ -155,6 +164,11 @@ export class AIService {
 
         Format as JSON with proper structure.
       `;
+
+      if (!ai) {
+        console.warn('GEMINI_API_KEY not set, returning fallback data.');
+        return this.getFallbackContentAnalysis();
+      }
 
       const response = await ai.models.generateContent({
         model: this.model, // FREE gemini-2.5-flash model
