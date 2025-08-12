@@ -26,6 +26,8 @@
   --destructive-foreground: hsl(210, 40%, 98%);
   --ring: hsl(217, 32%, 17%);
   --radius: 0.5rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
   
   /* Black background theme colors */
   --obsidian: #000000;
@@ -62,14 +64,14 @@
     font-family: 'Anton', sans-serif;
     font-weight: 400;
     letter-spacing: 0.08em;
-    @apply text-white;
+    @apply text-foreground;
   }
   
   h3, h4, h5, h6 {
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: 600;
     letter-spacing: 0.02em;
-    @apply text-white;
+    @apply text-foreground;
   }
   
   p, span, label, input, select, button {
@@ -99,6 +101,7 @@
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: 600;
     letter-spacing: 0.02em;
+    @apply text-xl;
   }
   
   .text-professional {

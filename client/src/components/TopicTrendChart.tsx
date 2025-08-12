@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, Ca
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface TrendDataPoint {
   month: string;
@@ -16,7 +17,13 @@ interface TopicTrend {
   data: TrendDataPoint[];
 }
 
-const COLORS = ["#00A3FF", "#FF5733", "#33FF57", "#FF33A1", "#A133FF", "#33FFF0"];
+const COLORS = [
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
+];
 
 export default function TopicTrendChart() {
   const [metric, setMetric] = useState<'avgSentiment' | 'totalEngagement'>('totalEngagement');
@@ -29,8 +36,8 @@ export default function TopicTrendChart() {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-gray-900/80 backdrop-blur-sm border border-gray-800 p-4 rounded-xl">
-          <p className="text-gray-300 font-semibold mb-2">{label}</p>
+        <div className="bg-card/80 backdrop-blur-sm border border-border p-4 rounded-xl">
+          <p className="text-foreground font-semibold mb-2">{label}</p>
           {payload.map((pld: any, index: number) => (
             <div key={index} style={{ color: pld.color }}>
               {pld.name}: {metric === 'avgSentiment' ? pld.value.toFixed(2) : pld.value.toLocaleString()}
@@ -44,22 +51,26 @@ export default function TopicTrendChart() {
 
   if (isLoading) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-electric-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Analyzing topic trends...</p>
+      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-1/3" />
+          <div className="flex items-center space-x-2">
+            <Skeleton className="h-8 w-24" />
+            <Skeleton className="h-8 w-24" />
+          </div>
         </div>
+        <Skeleton className="h-80 w-full" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex items-center justify-center h-96">
+      <div className="bg-card border border-border rounded-2xl p-6 flex items-center justify-center h-96">
         <div className="text-center">
-          <AlertTriangle className="w-10 h-10 text-danger-red mx-auto mb-4" />
-          <p className="text-red-400 mb-2">Failed to load trend data</p>
-          <p className="text-gray-400 text-sm">Please check the server connection.</p>
+          <AlertTriangle className="w-10 h-10 text-destructive mx-auto mb-4" />
+          <p className="text-destructive mb-2">Failed to load trend data</p>
+          <p className="text-muted-foreground text-sm">Please check the server connection.</p>
         </div>
       </div>
     );
@@ -68,18 +79,18 @@ export default function TopicTrendChart() {
   if (!trends || trends.length === 0) {
     return (
       <motion.div
-        className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
+        className="bg-card border border-border rounded-2xl p-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-white heading-secondary">
+          <h3 className="text-xl font-semibold text-foreground heading-secondary">
             Topic & Sentiment Trends
           </h3>
         </div>
         <div className="h-80 flex items-center justify-center">
-          <p className="text-gray-500">No trend data available to display.</p>
+          <p className="text-muted-foreground">No trend data available to display.</p>
         </div>
       </motion.div>
     );
@@ -100,27 +111,27 @@ export default function TopicTrendChart() {
 
   return (
     <motion.div
-      className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
+      className="bg-card border border-border rounded-2xl p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-white heading-secondary">
+        <h3 className="text-xl font-semibold text-foreground heading-secondary">
           Topic & Sentiment Trends
         </h3>
         <div className="flex items-center space-x-2">
           <Button
             size="sm"
             onClick={() => setMetric('totalEngagement')}
-            className={metric === 'totalEngagement' ? 'bg-white text-black' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}
+            variant={metric === 'totalEngagement' ? 'default' : 'outline'}
           >
             Engagement
           </Button>
           <Button
             size="sm"
             onClick={() => setMetric('avgSentiment')}
-            className={metric === 'avgSentiment' ? 'bg-white text-black' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}
+            variant={metric === 'avgSentiment' ? 'default' : 'outline'}
           >
             Sentiment
           </Button>
@@ -130,22 +141,25 @@ export default function TopicTrendChart() {
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis
               dataKey="month"
-              tick={{ fill: '#a0aec0', fontSize: 12 }}
-              axisLine={false}
+              tick={{ fill: 'hsl(var(--muted-foreground))' }}
               tickLine={false}
-              type="category"
+              axisLine={false}
+              stroke="hsl(var(--border))"
+              className="text-xs"
             />
             <YAxis
-              tick={{ fill: '#a0aec0', fontSize: 12 }}
-              axisLine={false}
+              tick={{ fill: 'hsl(var(--muted-foreground))' }}
               tickLine={false}
+              axisLine={false}
+              stroke="hsl(var(--border))"
+              className="text-xs"
               tickFormatter={(value) => metric === 'avgSentiment' ? value.toFixed(1) : (value / 1000) + 'k'}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize: '14px' }} />
+            <Legend wrapperStyle={{ fontSize: 'var(--font-size-sm)' }} />
             {trends.map((trend, index) => (
               <Line
                 key={trend.topic}

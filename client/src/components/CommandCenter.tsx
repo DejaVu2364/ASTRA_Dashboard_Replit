@@ -174,10 +174,10 @@ export default function CommandCenter() {
         transition={{ duration: 0.5 }}
         className="mb-12"
       >
-        <h1 className="text-3xl font-semibold text-white mb-3 heading-secondary">
+        <h1 className="text-3xl font-semibold text-foreground mb-3 heading-main">
           Astra Intelligence
         </h1>
-        <p className="text-gray-500 text-professional">
+        <p className="text-muted-foreground text-professional">
           Political intelligence platform with AI-powered analytics
         </p>
       </motion.div>

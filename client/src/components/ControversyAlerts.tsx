@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Post } from "@shared/schema";
 
 export default function ControversyAlerts() {
@@ -10,23 +11,29 @@ export default function ControversyAlerts() {
   });
 
   const getSentimentColor = (score: number) => {
-    if (score > 0.1) return 'text-verified-green';
+    if (score > 0.1) return 'text-success-emerald';
     if (score < -0.1) return 'text-danger-red';
-    return 'text-gray-400';
+    return 'text-muted-foreground';
   };
 
   const getVarianceColor = (variance: number) => {
     if (variance > 0.5) return 'text-warning-amber';
-    if (variance > 0.3) return 'text-yellow-400';
-    return 'text-gray-500';
+    if (variance > 0.3) return 'text-yellow-400'; // No direct theme color, but warning is close
+    return 'text-muted-foreground';
   };
 
   if (isLoading) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-electric-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Scanning for controversial posts...</p>
+      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-4 w-1/4" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
         </div>
       </div>
     );
@@ -34,11 +41,11 @@ export default function ControversyAlerts() {
 
   if (error) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex items-center justify-center h-64">
+      <div className="bg-card border border-border rounded-2xl p-6 flex items-center justify-center h-64">
         <div className="text-center">
-          <AlertTriangle className="w-10 h-10 text-danger-red mx-auto mb-4" />
-          <p className="text-red-400 mb-2">Failed to load controversy data</p>
-          <p className="text-gray-400 text-sm">Please check the server connection.</p>
+          <AlertTriangle className="w-10 h-10 text-destructive mx-auto mb-4" />
+          <p className="text-destructive mb-2">Failed to load controversy data</p>
+          <p className="text-muted-foreground text-sm">Please check the server connection.</p>
         </div>
       </div>
     );
@@ -46,11 +53,22 @@ export default function ControversyAlerts() {
 
   if (!posts || posts.length === 0) {
     return (
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex items-center justify-center h-64">
-        <div className="text-center">
-          <p className="text-gray-400">No controversial posts detected.</p>
+      <motion.div
+        className="bg-card border border-border rounded-2xl p-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-semibold text-foreground heading-secondary flex items-center">
+            <AlertTriangle className="w-6 h-6 mr-3 text-warning-amber" />
+            Controversy Hotspot
+          </h3>
         </div>
-      </div>
+        <div className="flex items-center justify-center h-48">
+          <p className="text-muted-foreground">No controversial posts detected.</p>
+        </div>
+      </motion.div>
     );
   }
 
@@ -71,27 +89,27 @@ export default function ControversyAlerts() {
 
   return (
     <motion.div
-      className="bg-gray-900 border border-gray-800 rounded-2xl p-6"
+      className="bg-card border border-border rounded-2xl p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold text-white heading-secondary flex items-center">
+        <h3 className="text-xl font-semibold text-foreground heading-secondary flex items-center">
           <AlertTriangle className="w-6 h-6 mr-3 text-warning-amber" />
           Controversy Hotspot
         </h3>
-        <p className="text-sm text-gray-500">Top 10 posts with the highest sentiment variance</p>
+        <p className="text-sm text-muted-foreground">Top 10 posts with the highest sentiment variance</p>
       </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-800">
-              <th className="text-left py-3 px-4 font-medium text-gray-500">Post Caption</th>
-              <th className="text-center py-3 px-4 font-medium text-gray-500">Avg. Sentiment</th>
-              <th className="text-center py-3 px-4 font-medium text-gray-500">Sentiment Variance</th>
-              <th className="text-center py-3 px-4 font-medium text-gray-500">Engagement Rate</th>
+            <tr className="border-b border-border">
+              <th className="text-left py-4 px-4 font-medium text-muted-foreground">Post Caption</th>
+              <th className="text-center py-4 px-4 font-medium text-muted-foreground">Avg. Sentiment</th>
+              <th className="text-center py-4 px-4 font-medium text-muted-foreground">Sentiment Variance</th>
+              <th className="text-center py-4 px-4 font-medium text-muted-foreground">Engagement Rate</th>
             </tr>
           </thead>
           <motion.tbody
@@ -103,10 +121,20 @@ export default function ControversyAlerts() {
               <motion.tr
                 key={post.postId}
                 variants={rowVariants}
-                className="border-b border-gray-800/50 hover:bg-gray-800/40 transition-colors"
+                className="border-b border-border/50 hover:bg-muted/40 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    // In a real app, you would trigger a click handler here
+                    console.log('Row activated:', post.postId);
+                  }
+                }}
               >
                 <td className="py-4 px-4 max-w-md">
-                  <p className="truncate text-gray-300">{post.postCaption}</p>
+                  <p className="truncate text-foreground">{post.postCaption}</p>
                 </td>
                 <td className="py-4 px-4 text-center">
                   <span className={`font-mono text-lg ${getSentimentColor(post.avgSentimentScore)}`}>
