@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import { Search, Filter, TrendingUp, MessageCircle, Heart, Share2, Eye, Brain, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useQuery } from "@tanstack/react-query";
 import type { Post } from "@shared/schema";
+import { usePosts } from "@/hooks/usePosts";
 
 interface SearchResult {
   post: Post;
@@ -18,10 +18,7 @@ export default function IntelligenceSearch() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const { data: posts } = useQuery<Post[]>({
-    queryKey: ['/api/posts'],
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: posts } = usePosts();
 
   const metrics = [
     { value: 'all', label: 'All Intelligence', icon: Brain },
@@ -42,7 +39,7 @@ export default function IntelligenceSearch() {
     const results: SearchResult[] = posts
       .filter(post => {
         const searchTerm = searchQuery.toLowerCase();
-        const content = post.content?.toLowerCase() || '';
+        const content = post.caption?.toLowerCase() || '';
         const topic = post.mainTopic?.toLowerCase() || '';
         
         return content.includes(searchTerm) || topic.includes(searchTerm);
@@ -105,7 +102,7 @@ export default function IntelligenceSearch() {
 
   const calculateRelevanceScore = (post: Post, query: string): number => {
     const queryTerms = query.toLowerCase().split(' ');
-    const content = post.content?.toLowerCase() || '';
+    const content = post.caption?.toLowerCase() || '';
     const topic = post.mainTopic?.toLowerCase() || '';
     
     let score = 0;
@@ -230,7 +227,7 @@ export default function IntelligenceSearch() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-300 line-clamp-2">
-                      {result.post.content?.substring(0, 150)}...
+                      {result.post.caption?.substring(0, 150)}...
                     </p>
                   </div>
                   <div className="flex items-center space-x-4 text-sm text-gray-400">

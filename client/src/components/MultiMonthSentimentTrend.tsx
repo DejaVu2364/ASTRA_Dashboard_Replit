@@ -1,21 +1,17 @@
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import { Calendar, TrendingUp, TrendingDown, BarChart3, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Post } from "@shared/schema";
 import { useState } from "react";
+import { usePosts } from "@/hooks/usePosts";
 
 export default function MultiMonthSentimentTrend() {
   const [selectedTopic, setSelectedTopic] = useState<string>('All Topics');
   const [timeRange, setTimeRange] = useState<'3months' | '6months' | '12months'>('6months');
   
-  const { data: posts } = useQuery<Post[]>({
-    queryKey: ['/api/posts'],
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: posts } = usePosts();
 
   // Generate multi-month sentiment data
   const multiMonthData = posts?.reduce((acc, post) => {

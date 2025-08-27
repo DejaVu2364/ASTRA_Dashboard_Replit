@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 // WebSocket removed to prevent conflicts with Vite
 import bcrypt from "bcryptjs";
@@ -9,8 +9,71 @@ import fs from "fs";
 import path from "path";
 import { parse } from "csv-parse/sync";
 import { aiService } from "./ai";
+import { z, ZodError } from "zod";
+import { fromZodError } from "zod-validation-error";
 
 const JWT_SECRET = process.env.JWT_SECRET || "astra-intelligence-secret-key";
+
+// Zod validation middleware
+const validate = (schema: z.ZodSchema<any>) => (req: Request, res: Response, next: NextFunction) => {
+  try {
+    req.body = schema.parse(req.body);
+    next();
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const validationError = fromZodError(error);
+      return res.status(400).json({
+        error: "Invalid request body",
+        details: validationError.details,
+      });
+    }
+    // Forward other errors
+    next(error);
+  }
+};
+
+// Zod schema for AI content analysis
+const AIAnalyzeContentSchema = z.object({
+  content: z.string().min(1, "Content cannot be empty."),
+  metrics: z.object({
+    engagementRate: z.number().optional(),
+    sentiment: z.number().optional(),
+    likes: z.number().optional(),
+    comments: z.number().optional(),
+    shares: z.number().optional(),
+  }),
+});
+
+// Zod schema for strategic report
+const AIStrategicReportSchema = z.object({
+  timeframe: z.string().optional().default('current month'),
+});
+
+interface PostSummaryRow {
+  post_id: string;
+  post_caption: string;
+  total_likes: string;
+  num_shares: string;
+  comment_count: string;
+  avg_sentiment_score: string;
+  sentiment_variance: string;
+  negative_comment_ratio: string;
+  main_topic: string;
+  most_positive_comment: string;
+  most_negative_comment: string;
+  weighted_engagement_rate: string;
+}
+
+interface EnrichedCommentRow {
+    post_id: string;
+    text_for_analysis: string;
+    original_comment_for_context: string;
+    original_language: string;
+    sentiment_score: string;
+    topic: string;
+    comment_likes: string;
+}
+
 
 // Real data loading functions
 function loadPostSummaries() {
@@ -37,29 +100,29 @@ function loadPostSummaries() {
     
     // Apply translations to captions that contain these phrases
     Object.entries(kannadaTranslations).forEach(([kannada, english]) => {
-      translatedCaptions[kannada] = english;
+      (translatedCaptions as any)[kannada] = english;
     });
     
     console.log(`Created ${Object.keys(translatedCaptions).length} manual caption translations`);
     
-    const allPosts = [];
+    const allPosts: any[] = [];
     for (const file of summaryFiles) {
       const filePath = path.join(summaryDir, file);
       const csvContent = fs.readFileSync(filePath, "utf-8");
-      const rows = parse(csvContent, { columns: true, skip_empty_lines: true, cast: true });
+      const rows = parse(csvContent, { columns: true, skip_empty_lines: true, cast: true }) as PostSummaryRow[];
       
       // Extract month from filename
       const monthMatch = file.match(/post_summary_(\d{4}-\d{2})\.csv/);
       const month = monthMatch ? monthMatch[1] : "unknown";
       
-      rows.forEach((row, index) => {
+      rows.forEach((row: PostSummaryRow, index) => {
         // Check if this caption has a translation
         const originalCaption = row.post_caption || "No caption available";
         let translatedCaption = null;
         
         // Look for exact matches first
-        if (translatedCaptions[originalCaption]) {
-          translatedCaption = translatedCaptions[originalCaption];
+        if ((translatedCaptions as any)[originalCaption]) {
+          translatedCaption = (translatedCaptions as any)[originalCaption];
         } else {
           // Look for partial matches in the caption
           for (const [kannada, english] of Object.entries(translatedCaptions)) {
@@ -74,21 +137,23 @@ function loadPostSummaries() {
           id: allPosts.length + index + 1,
           postId: row.post_id,
           platform: "facebook",
-          postCaption: originalCaption,
-          content: originalCaption,
+          caption: originalCaption,
           translatedContent: translatedCaption,
           totalLikes: parseInt(row.total_likes) || 0,
           numShares: parseInt(row.num_shares) || 0,
           commentCount: parseInt(row.comment_count) || 0,
-          avgSentimentScore: parseFloat(row.avg_sentiment_score) || 0,
-          sentimentVariance: parseFloat(row.sentiment_variance) || 0,
-          negativeCommentRatio: parseFloat(row.negative_comment_ratio) || 0,
+          avgSentimentScore: (parseFloat(row.avg_sentiment_score) || 0).toFixed(2),
+          sentimentVariance: (parseFloat(row.sentiment_variance) || 0).toFixed(4),
+          negativeCommentRatio: (parseFloat(row.negative_comment_ratio) || 0).toFixed(4),
           mainTopic: row.main_topic || "Unknown",
           mostPositiveComment: row.most_positive_comment || "",
           mostNegativeComment: row.most_negative_comment || "",
-          weightedEngagementRate: parseFloat(row.weighted_engagement_rate) || 0,
+          originalPositiveContext: "", // Add missing properties
+          originalNegativeContext: "", // Add missing properties
+          weightedEngagementRate: (parseFloat(row.weighted_engagement_rate) || 0).toFixed(4),
           analysisMonth: month,
-          createdAt: new Date(`${month}-01`).toISOString()
+          createdAt: new Date(`${month}-01`),
+          updatedAt: new Date()
         });
       });
     }
@@ -105,29 +170,29 @@ function loadEnrichedComments() {
     const commentsDir = path.join(process.cwd(), "DASHBOARD FINAL 2", "enriched_data");
     const commentFiles = fs.readdirSync(commentsDir).filter(file => file.startsWith("enriched_data_"));
     
-    const allComments = [];
+    const allComments: any[] = [];
     for (const file of commentFiles) {
       const filePath = path.join(commentsDir, file);
       const csvContent = fs.readFileSync(filePath, "utf-8");
-      const rows = parse(csvContent, { columns: true, skip_empty_lines: true, cast: true });
+      const rows = parse(csvContent, { columns: true, skip_empty_lines: true, cast: true }) as EnrichedCommentRow[];
       
       // Extract month from filename
       const monthMatch = file.match(/enriched_data_(\d{4}-\d{2})\.csv/);
       const month = monthMatch ? monthMatch[1] : "unknown";
       
-      rows.forEach((row, index) => {
+      rows.forEach((row: EnrichedCommentRow, index) => {
         if (row.text_for_analysis && String(row.text_for_analysis).trim() !== "") {
           allComments.push({
             id: allComments.length + index + 1,
             postId: parseInt(row.post_id) || 0,
             content: String(row.text_for_analysis || ""),
-            originalContent: row.original_comment_for_context || "",
-            language: row.original_language || "unknown",
-            sentiment: row.sentiment_score || 0,
+            originalComment: row.original_comment_for_context || "",
+            originalLanguage: row.original_language || "unknown",
+            sentimentScore: (parseFloat(row.sentiment_score) || 0).toFixed(2),
             topic: row.topic || "Unknown",
-            likes: row.comment_likes || 0,
+            likesCount: parseInt(row.comment_likes) || 0,
             analysisMonth: month,
-            createdAt: new Date(`${month}-01`).toISOString()
+            createdAt: new Date(`${month}-01`)
           });
         }
       });
@@ -145,7 +210,7 @@ function loadNarrativeReports() {
     const reportsDir = path.join(process.cwd(), "DASHBOARD FINAL 2", "monthly_reports");
     const reportFiles = fs.readdirSync(reportsDir).filter(file => file.startsWith("report-") && file.endsWith(".md"));
     
-    const allReports = [];
+    const allReports: any[] = [];
     for (const file of reportFiles) {
       const filePath = path.join(reportsDir, file);
       const content = fs.readFileSync(filePath, "utf-8");
@@ -176,26 +241,26 @@ function loadNarrativeReports() {
 function generateAnalyticsFromRealData() {
   const posts = loadPostSummaries();
   const comments = loadEnrichedComments();
-  const analytics = [];
+  const analytics: any[] = [];
   
   // Calculate total metrics
   const totalPosts = posts.length;
   const totalLikes = posts.reduce((sum, post) => sum + post.totalLikes, 0);
   const totalShares = posts.reduce((sum, post) => sum + post.numShares, 0);
   const totalComments = posts.reduce((sum, post) => sum + post.commentCount, 0);
-  const avgSentiment = posts.reduce((sum, post) => sum + post.avgSentiment, 0) / totalPosts;
-  const avgEngagement = posts.reduce((sum, post) => sum + post.engagementRate, 0) / totalPosts;
+  const avgSentiment = totalPosts > 0 ? posts.reduce((sum, post) => sum + parseFloat(post.avgSentimentScore), 0) / totalPosts : 0;
+  const avgEngagement = totalPosts > 0 ? posts.reduce((sum, post) => sum + parseFloat(post.weightedEngagementRate), 0) / totalPosts : 0;
   
   // Sentiment distribution
-  const positiveComments = comments.filter(c => c.sentiment > 0.3).length;
-  const negativeComments = comments.filter(c => c.sentiment < -0.3).length;
+  const positiveComments = comments.filter(c => parseFloat(c.sentimentScore) > 0.3).length;
+  const negativeComments = comments.filter(c => parseFloat(c.sentimentScore) < -0.3).length;
   const neutralComments = comments.length - positiveComments - negativeComments;
   
   // Topic distribution
   const topicCounts = {};
   posts.forEach(post => {
     const topic = post.mainTopic || "Unknown";
-    topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+    (topicCounts as any)[topic] = ((topicCounts as any)[topic] || 0) + 1;
   });
   
   return [
@@ -213,7 +278,7 @@ function generateAnalyticsFromRealData() {
 }
 
 // Authentication middleware
-const authenticateToken = (req: any, res: any, next: any) => {
+const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -221,7 +286,7 @@ const authenticateToken = (req: any, res: any, next: any) => {
     return res.status(401).json({ error: 'Access token required' });
   }
 
-  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+  jwt.verify(token, JWT_SECRET, (err: jwt.VerifyErrors | null, user: any) => {
     if (err) {
       return res.status(403).json({ error: 'Invalid or expired token' });
     }
@@ -282,13 +347,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/users", async (req, res) => {
+  app.post("/api/users", validate(insertUserSchema), async (req, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
-      const user = await storage.createUser(userData);
+      const user = await storage.createUser(req.body);
       res.status(201).json(user);
     } catch (error) {
-      res.status(400).json({ error: "Invalid user data" });
+      res.status(400).json({ error: "Failed to create user" });
     }
   });
 
@@ -316,13 +380,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/posts", async (req, res) => {
+  app.post("/api/posts", validate(insertPostSchema), async (req, res) => {
     try {
-      const postData = insertPostSchema.parse(req.body);
-      const post = await storage.createPost(postData);
+      const post = await storage.createPost(req.body);
       res.status(201).json(post);
     } catch (error) {
       res.status(400).json({ error: "Invalid post data" });
+    }
+  });
+
+  // Comments route
+  app.get("/api/comments", async (req, res) => {
+    try {
+      const comments = loadEnrichedComments();
+      res.json(comments);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch comments" });
     }
   });
 
@@ -339,10 +412,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/analytics", async (req, res) => {
+  app.post("/api/analytics", validate(insertAnalyticsSchema), async (req, res) => {
     try {
-      const analyticsData = insertAnalyticsSchema.parse(req.body);
-      const analytics = await storage.createAnalytics(analyticsData);
+      const analytics = await storage.createAnalytics(req.body);
       res.status(201).json(analytics);
     } catch (error) {
       res.status(400).json({ error: "Invalid analytics data" });
@@ -359,10 +431,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/challenges", async (req, res) => {
+  app.post("/api/challenges", validate(insertChallengeSchema), async (req, res) => {
     try {
-      const challengeData = insertChallengeSchema.parse(req.body);
-      const challenge = await storage.createChallenge(challengeData);
+      const challenge = await storage.createChallenge(req.body);
       res.status(201).json(challenge);
     } catch (error) {
       res.status(400).json({ error: "Invalid challenge data" });
@@ -394,10 +465,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/narrative-reports", async (req, res) => {
+  app.post("/api/narrative-reports", validate(insertNarrativeReportSchema), async (req, res) => {
     try {
-      const reportData = insertNarrativeReportSchema.parse(req.body);
-      const report = await storage.createNarrativeReport(reportData);
+      const report = await storage.createNarrativeReport(req.body);
       res.status(201).json(report);
     } catch (error) {
       res.status(400).json({ error: "Invalid narrative report data" });
@@ -416,7 +486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/ai-analyze-content", async (req, res) => {
+  app.post("/api/ai-analyze-content", validate(AIAnalyzeContentSchema), async (req, res) => {
     try {
       const { content, metrics } = req.body;
       const analysis = await aiService.analyzeContent(content, metrics);
@@ -438,11 +508,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/ai-strategic-report", async (req, res) => {
+  app.post("/api/ai-strategic-report", validate(AIStrategicReportSchema), async (req, res) => {
     try {
       const { timeframe } = req.body;
       const posts = await storage.getAllPosts();
-      const report = await aiService.generateStrategicReport(posts, timeframe || 'current month');
+      const report = await aiService.generateStrategicReport(posts, timeframe);
       res.json({ report });
     } catch (error) {
       console.error('Error generating strategic report:', error);
@@ -476,10 +546,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/gemini-reports", async (req, res) => {
+  app.post("/api/gemini-reports", validate(insertGeminiReportSchema), async (req, res) => {
     try {
-      const reportData = insertGeminiReportSchema.parse(req.body);
-      const report = await storage.createGeminiReport(reportData);
+      const report = await storage.createGeminiReport(req.body);
       res.status(201).json(report);
     } catch (error) {
       res.status(400).json({ error: "Invalid Gemini report data" });

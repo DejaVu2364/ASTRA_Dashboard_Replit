@@ -214,3 +214,59 @@ export type NarrativeReport = typeof narrativeReports.$inferSelect;
 
 export type InsertGeminiReport = z.infer<typeof insertGeminiReportSchema>;
 export type GeminiReport = typeof geminiReports.$inferSelect;
+
+// Extended types for API responses
+export type ApiPost = Post & {
+  analysisMonth?: string;
+  translatedContent?: string | null;
+  contentType?: string;
+};
+
+export type ApiComment = Comment & {
+  analysisMonth?: string;
+};
+
+export type ApiNarrativeReport = NarrativeReport & {
+  title: string;
+  summary: string;
+  content: string;
+};
+
+export type ApiGeminiReport = GeminiReport & {
+  title: string;
+  summary: string;
+};
+
+
+// AI Service-related types
+export interface AIInsight {
+  id: string;
+  type: 'performance' | 'opportunity' | 'strategy' | 'audience' | 'content' | 'trend';
+  title: string;
+  description: string;
+  confidence: number;
+  priority: 'high' | 'medium' | 'low';
+  actionable: boolean;
+  recommendation: string;
+  impact: 'high' | 'medium' | 'low';
+  dataPoints: string[];
+  generatedAt: Date;
+}
+
+export interface ContentAnalysis {
+  sentiment: number;
+  topics: string[];
+  engagementPrediction: number;
+  recommendedActions: string[];
+  contentQuality: number;
+  viralPotential: number;
+}
+
+export interface NarrativeAnalysis {
+  dominantNarratives: string[];
+  emergingTrends: string[];
+  sentimentShift: number;
+  narrativeStrength: Record<string, number>;
+  strategicRecommendations: string[];
+  riskAssessment: string[];
+}

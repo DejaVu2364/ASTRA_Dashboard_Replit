@@ -1,25 +1,19 @@
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
 import { Calendar, FileText, Download, Search, BookOpen, Star, AlertCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import type { NarrativeReport, GeminiReport } from "@shared/schema";
 import { useState } from "react";
+import { useNarrativeReports } from "@/hooks/useNarrativeReports";
+import { useGeminiReports } from "@/hooks/useGeminiReports";
+import type { ApiNarrativeReport, ApiGeminiReport } from "@shared/schema";
 
 export default function AIBriefingLibrary() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
   
-  const { data: narrativeReports } = useQuery<NarrativeReport[]>({
-    queryKey: ['/api/narrative-reports'],
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: geminiReports } = useQuery<GeminiReport[]>({
-    queryKey: ['/api/gemini-reports'],
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: narrativeReports } = useNarrativeReports();
+  const { data: geminiReports } = useGeminiReports();
 
   // Filter reports based on search term
   const filteredNarrativeReports = narrativeReports?.filter(report =>
@@ -57,12 +51,12 @@ export default function AIBriefingLibrary() {
     type, 
     onSelect 
   }: { 
-    report: NarrativeReport | GeminiReport; 
+    report: ApiNarrativeReport | ApiGeminiReport;
     type: 'narrative' | 'gemini';
     onSelect: (id: string) => void;
   }) => {
     const isGemini = type === 'gemini';
-    const reportType = isGemini ? (report as GeminiReport).reportType : 'narrative';
+    const reportType = isGemini ? (report as ApiGeminiReport).reportType : 'narrative';
     const color = getReportColor(reportType);
     
     return (

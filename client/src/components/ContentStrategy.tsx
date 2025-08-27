@@ -1,19 +1,15 @@
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, BarChart3, Download } from "lucide-react";
-import type { Post } from "@shared/schema";
 import { useState } from "react";
+import { usePosts } from "@/hooks/usePosts";
 
 export default function ContentStrategy() {
   const [selectedQuadrant, setSelectedQuadrant] = useState<string | null>(null);
   
-  const { data: posts } = useQuery<Post[]>({
-    queryKey: ['/api/posts'],
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: posts } = usePosts();
 
   // Create content strategy quadrant data
   const contentData = posts?.reduce((acc, post) => {

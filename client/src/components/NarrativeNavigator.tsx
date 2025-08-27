@@ -1,24 +1,20 @@
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
 import { Calendar, TrendingUp, MessageSquare, Target, BookOpen, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Post } from "@shared/schema";
 import { useState } from "react";
+import { usePosts } from "@/hooks/usePosts";
+import { useAiNarrativeAnalysis } from "@/hooks/useAiNarrativeAnalysis";
 
 export default function NarrativeNavigator() {
   const [selectedNarrative, setSelectedNarrative] = useState<string | null>(null);
   
-  const { data: posts } = useQuery<Post[]>({
-    queryKey: ['/api/posts'],
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: posts } = usePosts();
 
-  // Fetch AI narrative analysis
-  const { data: aiNarrativeAnalysis, isLoading: narrativeLoading, refetch: refetchNarrative } = useQuery({
-    queryKey: ['/api/ai-narrative-analysis'],
-    staleTime: 3 * 60 * 1000, // 3 minutes
+  // Fetch AI narrative analysis, enabled only when posts are available
+  const { data: aiNarrativeAnalysis, isLoading: narrativeLoading, refetch: refetchNarrative } = useAiNarrativeAnalysis({
+    enabled: !!posts && posts.length > 0,
   });
 
   // Analyze narrative patterns from posts (fallback)

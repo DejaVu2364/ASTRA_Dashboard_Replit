@@ -1,45 +1,45 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { LucideProps } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 interface KPICardProps {
   title: string;
-  value: number | string;
-  change: string | null;
-  icon: string;
-  color: string;
-  delay?: number;
+  value: string;
+  change?: string;
+  icon: React.ComponentType<LucideProps>;
+  description?: string;
 }
 
-export default function KPICard({ 
-  title, 
-  value, 
-  icon, 
-  color
-}: KPICardProps) {
-
-  const getColorClasses = (color: string) => {
-    switch (color) {
-      case 'electric-blue':
-        return 'bg-electric-blue/20 text-electric-blue';
-      case 'verified-green':
-        return 'bg-verified-green/20 text-verified-green';
-      case 'purple-500':
-        return 'bg-purple-500/20 text-purple-400';
-      case 'red-500':
-        return 'bg-red-500/20 text-red-400';
-      default:
-        return 'bg-gray-500/20 text-gray-400';
-    }
-  };
+/**
+ * A reusable card component for displaying a Key Performance Indicator (KPI).
+ * Shows a title, a large value, an optional change indicator, and an icon.
+ */
+export function KPICard({ title, value, change, icon: Icon, description }: KPICardProps) {
+  const isPositive = change?.startsWith('+');
+  const isNegative = change?.startsWith('-');
 
   return (
-    <div className="glass-morphism p-6 rounded-xl hover:scale-105 transition-transform duration-300">
-      <div className="flex items-center justify-between mb-4">
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${getColorClasses(color)}`}>
-          <span className="text-xl">{icon}</span>
-        </div>
-      </div>
-      <div className="text-2xl font-bold text-white mb-1">
-        {typeof value === 'string' ? value : value.toLocaleString()}
-      </div>
-      <div className="text-sm text-gray-400">{title}</div>
-    </div>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        {change && (
+          <p className={cn(
+            "text-xs",
+            isPositive && "text-green-500",
+            isNegative && "text-red-500",
+            !isPositive && !isNegative && "text-muted-foreground"
+          )}>
+            {change} from last month
+          </p>
+        )}
+        {description && !change && (
+          <p className="text-xs text-muted-foreground">{description}</p>
+        )}
+      </CardContent>
+    </Card>
   );
 }

@@ -1,16 +1,12 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
-import type { Post } from "@shared/schema";
+import { usePosts } from "@/hooks/usePosts";
 
 export default function PostTable() {
-  const { data: posts, isLoading, error } = useQuery<Post[]>({
-    queryKey: ['/api/posts'],
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  const { data: posts, isLoading, error } = usePosts();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTopic, setSelectedTopic] = useState('All');
@@ -178,7 +174,7 @@ export default function PostTable() {
                   <div className="truncate">
                     {showEnglish && post.translatedContent ? 
                       post.translatedContent.substring(0, 100) : 
-                      post.content.substring(0, 100)
+                      post.caption.substring(0, 100)
                     }...
                   </div>
                   {showEnglish && (

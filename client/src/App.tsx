@@ -1,5 +1,5 @@
 import { Switch, Route } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -11,10 +11,25 @@ import IntroScreen from "./components/IntroScreen";
 import CommandCenter from "./components/CommandCenter";
 import ParticleBackground from "./components/ParticleBackground";
 import NotFound from "@/pages/not-found";
+import { Dashboard } from "@/components/Dashboard";
 
 function AppContent() {
   const { isAuthenticated, isLoading, login } = useAuth();
   const [showIntro, setShowIntro] = useState(true);
+  const [activeRoute, setActiveRoute] = useState('command-center');
+  const [selectedInsight, setSelectedInsight] = useState<any>(null);
+
+  useEffect(() => {
+    const handleNavigateToAI = (event: CustomEvent) => {
+      setSelectedInsight(event.detail.insightData);
+      setActiveRoute('chat-astra');
+    };
+
+    window.addEventListener('navigateToAI', handleNavigateToAI as EventListener);
+    return () => {
+      window.removeEventListener('navigateToAI', handleNavigateToAI as EventListener);
+    };
+  }, []);
 
 
   if (isLoading) {
@@ -33,10 +48,17 @@ function AppContent() {
     setShowIntro(false);
   };
 
+  const handleNavigate = (route: string) => {
+    setActiveRoute(route);
+  };
 
 
   const renderContent = () => {
-    return <CommandCenter />;
+    return (
+      <Dashboard activeRoute={activeRoute} onNavigate={handleNavigate}>
+        <CommandCenter activeTab={activeRoute} selectedInsight={selectedInsight} />
+      </Dashboard>
+    );
   };
 
   return (

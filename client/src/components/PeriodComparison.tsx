@@ -1,19 +1,15 @@
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { Calendar, TrendingUp, TrendingDown, BarChart3, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Post } from "@shared/schema";
 import { useState } from "react";
+import { usePosts } from "@/hooks/usePosts";
 
 export default function PeriodComparison() {
   const [comparisonPeriod, setComparisonPeriod] = useState<'previous' | '3months' | '6months'>('previous');
   
-  const { data: posts } = useQuery<Post[]>({
-    queryKey: ['/api/posts'],
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: posts } = usePosts();
 
   // Mock current period data (January 2025) vs previous periods
   const currentPeriodData = posts?.map(post => ({

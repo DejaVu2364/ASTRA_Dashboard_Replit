@@ -1,18 +1,11 @@
 import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
-import { useQuery } from "@tanstack/react-query";
-import type { Post, Analytics } from "@shared/schema";
+import { usePosts } from "@/hooks/usePosts";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 export default function TopicChart() {
-  const { data: posts, isLoading } = useQuery<Post[]>({
-    queryKey: ['/api/posts'],
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: analytics } = useQuery<Analytics[]>({
-    queryKey: ['/api/analytics'],
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: posts, isLoading } = usePosts();
+  const { data: analytics } = useAnalytics();
 
   // Calculate topic distribution from real data
   const topicDistribution = posts?.reduce((acc, post) => {
@@ -80,7 +73,6 @@ export default function TopicChart() {
               axisLine={false}
               tickLine={false}
               tick={{ fill: '#9ca3af', fontSize: 12 }}
-              grid={false}
             />
             <Tooltip content={<CustomTooltip />} />
             <Bar 

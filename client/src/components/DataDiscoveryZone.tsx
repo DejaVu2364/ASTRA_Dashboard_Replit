@@ -1,13 +1,14 @@
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
 import { Search, Filter, Download, Eye, BarChart3, TrendingUp, Database, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Post, Comment } from "@shared/schema";
+import type { ApiPost } from "@shared/schema";
 import { useState, useMemo } from "react";
+import { usePosts } from "@/hooks/usePosts";
+import { useComments } from "@/hooks/useComments";
 
 export default function DataDiscoveryZone() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,17 +17,10 @@ export default function DataDiscoveryZone() {
   const [sentimentFilter, setSentimentFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'engagement' | 'sentiment' | 'date'>('engagement');
   const [viewMode, setViewMode] = useState<'grid' | 'table' | 'detailed'>('grid');
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedPost, setSelectedPost] = useState<ApiPost | null>(null);
   
-  const { data: posts } = useQuery<Post[]>({
-    queryKey: ['/api/posts'],
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: comments } = useQuery<Comment[]>({
-    queryKey: ['/api/comments'],
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: posts } = usePosts();
+  const { data: comments } = useComments();
 
   // Get unique values for filters
   const uniqueTopics = useMemo(() => {
@@ -35,7 +29,7 @@ export default function DataDiscoveryZone() {
   }, [posts]);
 
   const uniqueContentTypes = useMemo(() => {
-    const types = new Set(posts?.map(p => p.contentType).filter(Boolean) || []);
+    const types = new Set((posts || []).map(p => p.contentType).filter((t): t is string => !!t));
     return ['all', ...Array.from(types)];
   }, [posts]);
 
@@ -45,7 +39,7 @@ export default function DataDiscoveryZone() {
 
     let filtered = posts.filter(post => {
       // Text search
-      if (searchQuery && !post.postCaption?.toLowerCase().includes(searchQuery.toLowerCase())) {
+      if (searchQuery && !post.caption?.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
 
@@ -109,7 +103,7 @@ export default function DataDiscoveryZone() {
     };
   }, [posts, filteredPosts]);
 
-  const PostCard = ({ post }: { post: Post }) => (
+  const PostCard = ({ post }: { post: ApiPost }) => (
     <Card 
       className="cursor-pointer hover:border-electric-blue/50 transition-all duration-300"
       onClick={() => setSelectedPost(post)}
@@ -124,7 +118,7 @@ export default function DataDiscoveryZone() {
           </Badge>
         </div>
         <CardTitle className="text-sm text-white line-clamp-2">
-          {post.postCaption?.substring(0, 80)}...
+          {post.caption?.substring(0, 80)}...
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -154,7 +148,7 @@ export default function DataDiscoveryZone() {
     </Card>
   );
 
-  const PostDetailModal = ({ post }: { post: Post }) => (
+  const PostDetailModal = ({ post }: { post: ApiPost }) => (
     <motion.div
       className="glass-morphism p-6 rounded-xl"
       initial={{ opacity: 0, y: 20 }}
@@ -175,7 +169,7 @@ export default function DataDiscoveryZone() {
           <div>
             <h4 className="text-lg font-medium text-white mb-2">Content</h4>
             <p className="text-gray-300 text-sm leading-relaxed">
-              {post.postCaption}
+              {post.caption}
             </p>
           </div>
           

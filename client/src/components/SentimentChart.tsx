@@ -1,13 +1,9 @@
 import { motion } from "framer-motion";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, AreaChart } from "recharts";
-import { useQuery } from "@tanstack/react-query";
-import type { Post } from "@shared/schema";
+import { usePosts } from "@/hooks/usePosts";
 
 export default function SentimentChart() {
-  const { data: posts, isLoading } = useQuery<Post[]>({
-    queryKey: ['/api/posts'],
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: posts, isLoading } = usePosts();
 
   // Calculate sentiment data by month from real data
   const sentimentData = posts?.reduce((acc, post) => {

@@ -13,13 +13,17 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   const token = localStorage.getItem('astra_token');
+  const headers: HeadersInit = {};
+  if (data) {
+    headers['Content-Type'] = 'application/json';
+  }
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
   
   const res = await fetch(url, {
     method,
-    headers: {
-      ...(data && { "Content-Type": "application/json" }),
-      ...(token && { "Authorization": `Bearer ${token}` }),
-    },
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -35,12 +39,14 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     const token = localStorage.getItem('astra_token');
+    const headers: HeadersInit = {};
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
     
     const res = await fetch(queryKey.join("/") as string, {
       credentials: "include",
-      headers: {
-        ...(token && { "Authorization": `Bearer ${token}` }),
-      },
+      headers,
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {

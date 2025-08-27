@@ -1,19 +1,15 @@
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { Calendar, TrendingUp, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Post } from "@shared/schema";
 import { useState } from "react";
+import { usePosts } from "@/hooks/usePosts";
 
 export default function PerformanceTrends() {
   const [viewMode, setViewMode] = useState<'monthly' | 'topic'>('monthly');
   
-  const { data: posts } = useQuery<Post[]>({
-    queryKey: ['/api/posts'],
-    staleTime: 5 * 60 * 1000,
-  });
+  const { data: posts } = usePosts();
 
   // Calculate monthly performance trends
   const monthlyData = posts?.reduce((acc, post) => {

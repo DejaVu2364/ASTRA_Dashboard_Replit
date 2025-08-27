@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
-import type { Post, Comment } from "@shared/schema";
+import type { Post, Comment, AIInsight, ContentAnalysis, NarrativeAnalysis } from "@shared/schema";
+import crypto from 'crypto';
 
 // ============= FREE GEMINI API USAGE ONLY =============
 // Using gemini-2.5-flash (FREE model) with conservative limits
@@ -8,38 +9,16 @@ import type { Post, Comment } from "@shared/schema";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
-export interface AIInsight {
-  id: string;
-  type: 'performance' | 'opportunity' | 'strategy' | 'audience' | 'content' | 'trend';
-  title: string;
-  description: string;
-  confidence: number;
-  priority: 'high' | 'medium' | 'low';
-  actionable: boolean;
-  recommendation: string;
-  impact: 'high' | 'medium' | 'low';
-  dataPoints: string[];
-  generatedAt: Date;
+interface CacheEntry<T> {
+  timestamp: number;
+  data: T;
 }
 
-export interface ContentAnalysis {
-  sentiment: number;
-  topics: string[];
-  engagementPrediction: number;
-  recommendedActions: string[];
-  contentQuality: number;
-  viralPotential: number;
-}
-
-export interface NarrativeAnalysis {
-  dominantNarratives: string[];
-  emergingTrends: string[];
-  sentimentShift: number;
-  narrativeStrength: Record<string, number>;
-  strategicRecommendations: string[];
-  riskAssessment: string[];
-}
-
+/**
+ * AIService provides methods for interacting with the Google Gemini AI
+ * to generate insights, analyze content, and create reports based on social media data.
+ * It includes features like rate limiting, caching, and fallback mechanisms.
+ */
 export class AIService {
   // ============= FREE GEMINI CONFIGURATION =============
   // Using FREE Gemini model only - no cost incurred
@@ -49,6 +28,16 @@ export class AIService {
   private maxRequestsPerMinute = 15; // Conservative rate limit
   // ====================================================
 
+  private insightCache = new Map<string, CacheEntry<AIInsight[]>>();
+  private readonly CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+
+  /**
+   * A centralized method for making requests to the Gemini API.
+   * Includes rate limiting to stay within the free tier.
+   * @param prompt The prompt string to send to the AI.
+   * @param config Configuration for the AI model, like response type and schema.
+   * @returns The response from the AI or null if rate-limited.
+   */
   private async makeRequest(prompt: string, config: any): Promise<any> {
     // Rate limiting to stay within free tier limits
     this.requestCount++;
@@ -57,6 +46,7 @@ export class AIService {
       return null;
     }
     
+    // The actual API call is wrapped in a try/catch in the calling methods.
     return await ai.models.generateContent({
       model: this.model, // FREE gemini-2.5-flash model
       contents: prompt,
@@ -67,10 +57,24 @@ export class AIService {
     });
   }
 
+  /**
+   * Generates strategic insights from a collection of social media posts.
+   * This method is cached for 5 minutes to avoid redundant API calls.
+   * @param posts An array of Post objects to analyze.
+   * @returns A promise that resolves to an array of AIInsight objects.
+   */
   async generateInsights(posts: Post[]): Promise<AIInsight[]> {
+    const dataContext = this.prepareDataContext(posts);
+    const dataHash = crypto.createHash('md5').update(dataContext).digest('hex');
+
+    // Check cache first
+    const cachedEntry = this.insightCache.get(dataHash);
+    if (cachedEntry && (Date.now() - cachedEntry.timestamp < this.CACHE_DURATION_MS)) {
+      console.log("Returning cached insights.");
+      return cachedEntry.data;
+    }
+
     try {
-      const dataContext = this.prepareDataContext(posts);
-      
       const prompt = `
         Analyze the following social media performance data and generate strategic insights:
 
@@ -120,17 +124,27 @@ export class AIService {
         return this.getFallbackInsights(posts);
       }
 
-      const insights = JSON.parse(response.text || "[]");
-      return insights.map((insight: any) => ({
+      const insights: AIInsight[] = JSON.parse(response.text || "[]").map((insight: any) => ({
         ...insight,
         generatedAt: new Date()
       }));
+
+      // Store in cache
+      this.insightCache.set(dataHash, { timestamp: Date.now(), data: insights });
+
+      return insights;
     } catch (error) {
       console.error('Error generating AI insights:', error);
       return this.getFallbackInsights(posts);
     }
   }
 
+  /**
+   * Analyzes a single piece of content along with its performance metrics.
+   * @param content The text content of the post.
+   * @param metrics An object containing performance metrics like engagement rate, likes, etc.
+   * @returns A promise that resolves to a ContentAnalysis object.
+   */
   async analyzeContent(content: string, metrics: any): Promise<ContentAnalysis> {
     try {
       const prompt = `
@@ -156,26 +170,25 @@ export class AIService {
         Format as JSON with proper structure.
       `;
 
-      const response = await ai.models.generateContent({
-        model: this.model, // FREE gemini-2.5-flash model
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          maxOutputTokens: this.maxTokens, // Conservative limit for free usage
-          responseSchema: {
-            type: "object",
-            properties: {
-              sentiment: { type: "number" },
-              topics: { type: "array", items: { type: "string" } },
-              engagementPrediction: { type: "number" },
-              recommendedActions: { type: "array", items: { type: "string" } },
-              contentQuality: { type: "number" },
-              viralPotential: { type: "number" }
-            },
-            required: ["sentiment", "topics", "engagementPrediction", "recommendedActions", "contentQuality", "viralPotential"]
-          }
+      const response = await this.makeRequest(prompt, {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            sentiment: { type: "number" },
+            topics: { type: "array", items: { type: "string" } },
+            engagementPrediction: { type: "number" },
+            recommendedActions: { type: "array", items: { type: "string" } },
+            contentQuality: { type: "number" },
+            viralPotential: { type: "number" }
+          },
+          required: ["sentiment", "topics", "engagementPrediction", "recommendedActions", "contentQuality", "viralPotential"]
         }
       });
+
+      if (!response) {
+        return this.getFallbackContentAnalysis();
+      }
 
       return JSON.parse(response.text || "{}");
     } catch (error) {
@@ -184,13 +197,18 @@ export class AIService {
     }
   }
 
+  /**
+   * Analyzes a collection of posts to identify narrative trends and strategic insights.
+   * @param posts An array of Post objects to analyze for narratives.
+   * @returns A promise that resolves to a NarrativeAnalysis object.
+   */
   async generateNarrativeAnalysis(posts: Post[]): Promise<NarrativeAnalysis> {
     try {
       const narrativeContext = posts.map(p => ({
         topic: p.mainTopic,
         sentiment: p.avgSentimentScore,
         engagement: p.weightedEngagementRate,
-        content: p.postCaption?.substring(0, 200)
+        content: p.caption?.substring(0, 200)
       }));
 
       const prompt = `
@@ -209,26 +227,25 @@ export class AIService {
         Format as JSON with proper structure.
       `;
 
-      const response = await ai.models.generateContent({
-        model: this.model, // FREE gemini-2.5-flash model
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          maxOutputTokens: this.maxTokens, // Conservative limit for free usage
-          responseSchema: {
-            type: "object",
-            properties: {
-              dominantNarratives: { type: "array", items: { type: "string" } },
-              emergingTrends: { type: "array", items: { type: "string" } },
-              sentimentShift: { type: "number" },
-              narrativeStrength: { type: "object" },
-              strategicRecommendations: { type: "array", items: { type: "string" } },
-              riskAssessment: { type: "array", items: { type: "string" } }
-            },
-            required: ["dominantNarratives", "emergingTrends", "sentimentShift", "narrativeStrength", "strategicRecommendations", "riskAssessment"]
-          }
+      const response = await this.makeRequest(prompt, {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            dominantNarratives: { type: "array", items: { type: "string" } },
+            emergingTrends: { type: "array", items: { type: "string" } },
+            sentimentShift: { type: "number" },
+            narrativeStrength: { type: "object" },
+            strategicRecommendations: { type: "array", items: { type: "string" } },
+            riskAssessment: { type: "array", items: { type: "string" } }
+          },
+          required: ["dominantNarratives", "emergingTrends", "sentimentShift", "narrativeStrength", "strategicRecommendations", "riskAssessment"]
         }
       });
+
+      if (!response) {
+        return this.getFallbackNarrativeAnalysis();
+      }
 
       return JSON.parse(response.text || "{}");
     } catch (error) {
@@ -237,6 +254,12 @@ export class AIService {
     }
   }
 
+  /**
+   * Generates a full strategic report in Markdown format.
+   * @param posts An array of Post objects to include in the report.
+   * @param timeframe A string describing the time period for the report (e.g., "current month").
+   * @returns A promise that resolves to a string containing the Markdown report.
+   */
   async generateStrategicReport(posts: Post[], timeframe: string): Promise<string> {
     try {
       const summary = this.generateDataSummary(posts);
@@ -258,13 +281,13 @@ export class AIService {
         Format as markdown with clear sections and actionable insights.
       `;
 
-      const response = await ai.models.generateContent({
-        model: this.model, // FREE gemini-2.5-flash model
-        contents: prompt,
-        config: {
-          maxOutputTokens: this.maxTokens * 2 // Slightly higher limit for reports
-        }
+      const response = await this.makeRequest(prompt, {
+        maxOutputTokens: this.maxTokens * 2 // Slightly higher limit for reports
       });
+
+      if (!response) {
+        return this.getFallbackReport(timeframe);
+      }
 
       return response.text || "Report generation failed";
     } catch (error) {
@@ -280,13 +303,7 @@ export class AIService {
     
     const topicDistribution = posts.reduce((acc, p) => {
       const topic = p.mainTopic || 'Unknown';
-      acc[topic] = (acc[topic] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    const contentTypeDistribution = posts.reduce((acc, p) => {
-      const type = p.contentType || 'Standard';
-      acc[type] = (acc[type] || 0) + 1;
+      (acc as any)[topic] = ((acc as any)[topic] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
@@ -296,12 +313,11 @@ export class AIService {
       Average Engagement: ${(avgEngagement * 100).toFixed(2)}%
       
       Topic Distribution: ${JSON.stringify(topicDistribution, null, 2)}
-      Content Type Distribution: ${JSON.stringify(contentTypeDistribution, null, 2)}
       
       Top Performing Posts:
       ${posts.sort((a, b) => parseFloat(b.weightedEngagementRate || '0') - parseFloat(a.weightedEngagementRate || '0'))
         .slice(0, 5)
-        .map(p => `- ${p.mainTopic}: ${p.postCaption?.substring(0, 100)}... (${(parseFloat(p.weightedEngagementRate || '0') * 100).toFixed(2)}% engagement)`)
+        .map(p => `- ${p.mainTopic}: ${p.caption?.substring(0, 100)}... (${(parseFloat(p.weightedEngagementRate || '0') * 100).toFixed(2)}% engagement)`)
         .join('\n')}
     `;
   }
